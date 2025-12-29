@@ -25,11 +25,11 @@
       "path": "lang/en.json"
     }
   ],
-  "url": "",
-  "manifest": "",
-  "download": "",
+  "url": "https://github.com/Sisimshow/Token-Framer",
+  "manifest": "https://github.com/Sisimshow/Token-Framer/releases/latest/download/module.json",
+  "download": "https://github.com/Sisimshow/Token-Framer/releases/download/1.0.1/token-framer-1.0.1.zip",
   "license": "MIT",
-  "readme": "",
-  "bugs": "",
+  "readme": "https://github.com/Sisimshow/Token-Framer/blob/main/README.md",
+  "bugs": "https://github.com/Sisimshow/Token-Framer/issues",
   "changelog": ""
 }
