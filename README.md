@@ -1,6 +1,8 @@
 # Token Framer
 
-A Foundry VTT v13 module that composites pog-style frames onto token images. The base token image is combined with a frame overlay (and optional mask) to create a finished framed token, which is cached for performance.
+This is a vibe-coded (read, AI slop) project made for personal use that I figured I'd put on GitHub in case anyone is interested.
+
+Token Framer is a Foundry VTT v13 module that composites pog-style frames onto token images. A base token image is combined with a frame overlay (and optional mask) to create a finished framed token, which is cached for performance. It is designed to help quickly tokenize images and work with on-the-fly token art switching via Token Variant Art. 
 
 ## Features
 
@@ -75,4 +77,5 @@ MIT License
 ## Author
 
 Sisimshow
+
 
