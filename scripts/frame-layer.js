@@ -393,11 +393,16 @@ export async function applyFrameToToken(token, forceRegenerate = false) {
 export async function restoreOriginalImage(token) {
   const originalImage = token.document.getFlag(MODULE_ID, 'originalImage');
   
-  if (originalImage && token.document.texture.src !== originalImage) {
+  if (originalImage) {
     debugLog('Restoring base image for token:', token.name);
+    // Clear all flags AND update texture in a single update to prevent
+    // the updateToken hook from re-applying the frame
     await token.document.update({
       'texture.src': originalImage,
-      [`flags.${MODULE_ID}.currentCacheKey`]: null
+      [`flags.${MODULE_ID}.-=frameData`]: null,
+      [`flags.${MODULE_ID}.-=originalImage`]: null,
+      [`flags.${MODULE_ID}.-=currentCacheKey`]: null,
+      [`flags.${MODULE_ID}.-=cachedFramePath`]: null
     });
   }
 }

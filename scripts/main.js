@@ -67,10 +67,23 @@ Hooks.on('updateToken', async (document, changes, options, userId) => {
   // This happens when TVA applies a custom config that includes Token Framer settings
   if (newBaseImage && frameDataChanged) {
     debugLog('TVA combined update detected - new base image with frame settings');
-    // Update the originalImage FIRST, then apply frame with new settings
-    await document.setFlag(MODULE_ID, 'originalImage', newBaseImage);
-    await document.unsetFlag(MODULE_ID, 'currentCacheKey');
-    await applyFrameToToken(token, true);
+    const frameData = getFrameData(token);
+    
+    if (frameData.enabled && frameData.frameImage) {
+      // Frame is enabled - update originalImage and apply frame
+      await document.setFlag(MODULE_ID, 'originalImage', newBaseImage);
+      await document.unsetFlag(MODULE_ID, 'currentCacheKey');
+      await applyFrameToToken(token, true);
+    } else {
+      // Frame is disabled by this config - just clear cache-related flags
+      // Don't call restoreOriginalImage as that would override what TVA just set
+      await document.update({
+        [`flags.${MODULE_ID}.-=originalImage`]: null,
+        [`flags.${MODULE_ID}.-=currentCacheKey`]: null,
+        [`flags.${MODULE_ID}.-=cachedFramePath`]: null
+      });
+      debugLog('TVA config disabled frame - cleared cache flags');
+    }
     return;
   }
   
@@ -81,7 +94,7 @@ Hooks.on('updateToken', async (document, changes, options, userId) => {
     if (frameData.enabled && frameData.frameImage) {
       debugLog('Frame settings or base image changed - regenerating');
       await document.unsetFlag(MODULE_ID, 'currentCacheKey');
-      await applyFrameToToken(token, true);
+    await applyFrameToToken(token, true);
     }
     return;
   }

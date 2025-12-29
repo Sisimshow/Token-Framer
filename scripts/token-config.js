@@ -588,7 +588,10 @@ function activateListeners(rootEl, app, token, originalImage) {
   // Apply Frame button
   const applyButton = rootEl.querySelector('[data-token-framer="actions"] .tfl-preview-button');
   if (applyButton) {
-    applyButton.addEventListener('click', async () => {
+    applyButton.addEventListener('click', async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      
       const formData = gatherFrameFormData(rootEl);
       const placedToken = canvas.tokens?.get(token.id);
       
@@ -637,7 +640,10 @@ function activateListeners(rootEl, app, token, originalImage) {
   // Restore Original button
   const restoreButton = rootEl.querySelector('[data-token-framer="actions"] .tfl-restore-button');
   if (restoreButton) {
-    restoreButton.addEventListener('click', async () => {
+    restoreButton.addEventListener('click', async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      
       const placedToken = canvas.tokens?.get(token.id);
       
       if (placedToken) {
