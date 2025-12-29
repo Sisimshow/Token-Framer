@@ -1,0 +1,363 @@
+/**
+ * Token Framer - Styles
+ * UI styling for Token Configuration integration
+ * Updated for TVA compatibility - uses data attributes instead of wrapper classes
+ * Non-configurable elements use custom classes instead of form-group
+ */
+
+/* ==================== */
+/* Section Header       */
+/* ==================== */
+
+.tfl-section-header[data-token-framer="header"] {
+  margin-top: 1rem;
+  padding: 0.5rem 0;
+  border-top: 2px solid var(--color-border-light-tertiary);
+}
+
+.tfl-section-header[data-token-framer="header"] label {
+  font-weight: bold;
+  color: var(--color-text-hyperlink);
+}
+
+/* ==================== */
+/* Subheaders           */
+/* ==================== */
+
+.tfl-subheader[data-token-framer] {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0 0.25rem 0;
+  border-top: 1px solid var(--color-border-light-tertiary);
+}
+
+/* Hidden state for dependent fields */
+[data-tfl-dependent].tfl-hidden {
+  display: none !important;
+}
+
+/* ==================== */
+/* Form Group Styling   */
+/* ==================== */
+
+/* File Picker Button */
+.form-group[data-token-framer] .tfl-file-picker,
+.form-group[data-token-framer] .tfl-original-file-picker {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-light-tertiary);
+  border-radius: 3px;
+  background: var(--color-bg-btn);
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.form-group[data-token-framer] .tfl-file-picker:hover,
+.form-group[data-token-framer] .tfl-original-file-picker:hover {
+  background: var(--color-bg-btn-hover);
+}
+
+/* Inline Labels */
+.form-group[data-token-framer] .tfl-inline-label {
+  flex: 0 0 auto;
+  width: 20px;
+  text-align: center;
+  font-weight: bold;
+  opacity: 0.7;
+}
+
+/* Range Value Display */
+.form-group[data-token-framer] .range-value {
+  flex: 0 0 40px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-12);
+  opacity: 0.8;
+}
+
+/* Input Styling */
+.form-group[data-token-framer] input[type="range"] {
+  flex: 1;
+  height: 6px;
+  margin: 0 0.5rem;
+}
+
+.form-group[data-token-framer] input[type="number"] {
+  flex: 1;
+  min-width: 60px;
+  text-align: center;
+}
+
+.form-group[data-token-framer] input[type="text"] {
+  flex: 1;
+}
+
+.form-group[data-token-framer] input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+/* Hint Text */
+.form-group[data-token-framer] .hint {
+  flex: 0 0 100%;
+  margin: 0.25rem 0 0 0;
+  font-size: var(--font-size-11);
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* ==================== */
+/* Color Picker         */
+/* ==================== */
+
+.form-group[data-token-framer] .tfl-color-picker {
+  flex: 0 0 40px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--color-border-light-tertiary);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.form-group[data-token-framer] .tfl-color-text {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+/* ================================ */
+/* Preview + Background Side-by-Side */
+/* ================================ */
+
+/* Form-group wrapper for TVA compatibility */
+.form-group[data-token-framer="previewBgRow"] {
+  margin: 0.5rem 0;
+}
+
+.tfl-preview-bg-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+/* Background Settings Column (Right) */
+.tfl-bg-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+}
+
+.tfl-bg-column .tfl-subheader {
+  margin: 0;
+  padding: 0 0 0.25rem 0;
+  border-bottom: 1px solid var(--color-border-light-tertiary);
+}
+
+.tfl-compact-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tfl-compact-field > label {
+  flex: 0 0 auto;
+  min-width: 50px;
+  font-weight: 500;
+}
+
+.tfl-compact-field input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.tfl-color-row {
+  display: flex;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.tfl-color-row .tfl-color-picker {
+  flex: 0 0 32px;
+  height: 26px;
+  padding: 2px;
+  border: 1px solid var(--color-border-light-tertiary);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.tfl-color-row .tfl-color-text {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-11);
+  text-transform: uppercase;
+}
+
+.tfl-compact-hint {
+  margin: 0.25rem 0 0 0;
+  font-size: var(--font-size-10);
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Preview Column (Left) */
+.tfl-preview-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tfl-preview-column > label {
+  margin-bottom: 0.25rem;
+  font-weight: bold;
+}
+
+.tfl-preview-column .tfl-preview-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 180px;
+  aspect-ratio: 1;
+  border: 2px solid var(--color-border-light-tertiary);
+  border-radius: 8px;
+  background: repeating-conic-gradient(
+    rgba(128, 128, 128, 0.1) 0% 25%,
+    rgba(128, 128, 128, 0.2) 25% 50%
+  ) 50% / 20px 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tfl-preview-column .tfl-preview-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: none;
+}
+
+.tfl-preview-column .tfl-preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 0.6;
+  text-align: center;
+  padding: 1rem;
+}
+
+.tfl-preview-column .tfl-preview-placeholder i {
+  font-size: 1.5rem;
+  opacity: 0.5;
+}
+
+.tfl-preview-column .tfl-preview-placeholder span {
+  font-size: var(--font-size-11);
+  opacity: 0.7;
+}
+
+.tfl-preview-column .tfl-preview-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  font-size: 1.5rem;
+}
+
+/* ==================== */
+/* Refresh Preview Button */
+/* ==================== */
+
+.tfl-preview-column .tfl-refresh-base-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--color-border-light-tertiary);
+  border-radius: 3px;
+  background: rgba(50, 100, 150, 0.2);
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  font-size: var(--font-size-11);
+}
+
+.tfl-preview-column .tfl-refresh-base-button:hover {
+  background: rgba(50, 100, 150, 0.4);
+}
+
+/* ==================== */
+/* Action Buttons       */
+/* ==================== */
+
+.tfl-actions-section[data-token-framer="actions"] {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0 0.5rem 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border-light-tertiary);
+}
+
+.tfl-actions-section button {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border-light-tertiary);
+  border-radius: 3px;
+  background: var(--color-bg-btn);
+  cursor: pointer;
+  font-size: var(--font-size-12);
+  transition: background-color 0.1s ease;
+}
+
+.tfl-actions-section button:hover {
+  background: var(--color-bg-btn-hover);
+}
+
+.tfl-actions-section .tfl-preview-button {
+  background: rgba(50, 150, 50, 0.2);
+}
+
+.tfl-actions-section .tfl-preview-button:hover {
+  background: rgba(50, 150, 50, 0.35);
+}
+
+.tfl-actions-section .tfl-restore-button {
+  background: rgba(150, 100, 50, 0.2);
+}
+
+.tfl-actions-section .tfl-restore-button:hover {
+  background: rgba(150, 100, 50, 0.35);
+}
+
+.tfl-actions-section button i {
+  margin-right: 0.25rem;
+}
+
+/* ==================== */
+/* Base Image Field     */
+/* ==================== */
+
+.form-group[data-token-framer="originalImage"] .tfl-original-path {
+  flex: 1;
+}

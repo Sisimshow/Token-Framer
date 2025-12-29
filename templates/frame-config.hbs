@@ -1,0 +1,199 @@
+<!-- Token Framer Section Header - NOT a form-group to avoid TVA checkbox -->
+<div class="tfl-section-header" data-token-framer="header">
+  <label style="font-weight: bold; color: var(--color-text-hyperlink);">
+    <i class="fas fa-circle-notch" style="margin-right: 0.25rem;"></i>
+    Token Frame
+  </label>
+</div>
+
+<!-- Enable Frame Toggle -->
+<div class="form-group" data-token-framer="enable">
+  <label>Enable Frame</label>
+  <input type="checkbox" name="flags.{{moduleId}}.frameData.enabled" {{frameEnabled}}>
+  <p class="hint">Apply a frame overlay to this token.</p>
+</div>
+
+<!-- Preview and Background Settings Side-by-Side -->
+<div class="form-group" data-token-framer="previewBgRow" data-tfl-dependent="true">
+  <div class="tfl-preview-bg-row">
+    <!-- Live Preview (Left) -->
+    <div class="tfl-preview-column" data-token-framer="preview">
+      <label>Preview</label>
+      <div class="tfl-preview-wrapper">
+        <div class="tfl-preview-placeholder">
+          <i class="fas fa-image"></i>
+          <span>Select a frame image</span>
+        </div>
+        <div class="tfl-preview-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <img class="tfl-preview-image" src="" alt="Preview">
+      </div>
+    <button type="button" class="tfl-refresh-base-button" title="{{localize 'TOKEN-FRAMER.Config.RefreshHint'}}">
+      <i class="fas fa-sync-alt"></i>
+      {{localize "TOKEN-FRAMER.Config.Refresh"}}
+    </button>
+    </div>
+    
+    <!-- Background Settings (Right) -->
+    <div class="tfl-bg-column">
+      <div class="tfl-subheader" data-token-framer="bgHeader">
+        <label><strong>Background</strong></label>
+      </div>
+      
+      <div class="tfl-compact-field" data-token-framer="bgEnabled">
+        <label>Enable</label>
+        <input type="checkbox" name="flags.{{moduleId}}.frameData.bgEnabled" {{bgEnabled}}>
+      </div>
+      
+      <div class="tfl-compact-field" data-token-framer="bgColor">
+        <label>Color</label>
+        <div class="tfl-color-row">
+          <input type="color" name="flags.{{moduleId}}.frameData.bgColor" value="{{bgColor}}" class="tfl-color-picker">
+          <input type="text" name="flags.{{moduleId}}.frameData.bgColorText" value="{{bgColor}}" class="tfl-color-text" placeholder="#000000">
+        </div>
+      </div>
+      
+      <p class="tfl-compact-hint">Use color picker on the preview to sample colors.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Base Image Path -->
+<div class="form-group" data-token-framer="originalImage" data-tfl-dependent="true">
+  <label>Base Image</label>
+  <div class="form-fields">
+    <input type="text" class="tfl-original-path" name="flags.{{moduleId}}.originalImage" value="{{originalImage}}" placeholder="path/to/base-image.webp">
+    <button type="button" class="tfl-original-file-picker" title="Browse Files">
+      <i class="fas fa-file-import"></i>
+    </button>
+  </div>
+  <p class="hint">The token image before framing. Edit directly or use Refresh Preview above.</p>
+</div>
+
+<!-- Frame Image Path -->
+<div class="form-group" data-token-framer="frameImage" data-tfl-dependent="true">
+  <label>Frame Image</label>
+  <div class="form-fields">
+    <input type="text" name="flags.{{moduleId}}.frameData.frameImage" value="{{frameImage}}" placeholder="path/to/frame.webp">
+    <button type="button" class="tfl-file-picker" data-target="flags.{{moduleId}}.frameData.frameImage" title="Browse Files">
+      <i class="fas fa-file-import"></i>
+    </button>
+  </div>
+  <p class="hint">Path to the frame image file. Should be a PNG or WEBP with transparency.</p>
+</div>
+
+<!-- Mask Image Path (Optional) -->
+<div class="form-group" data-token-framer="maskImage" data-tfl-dependent="true">
+  <label>Mask Image</label>
+  <div class="form-fields">
+    <input type="text" name="flags.{{moduleId}}.frameData.maskImage" value="{{maskImage}}" placeholder="Auto (circular)">
+    <button type="button" class="tfl-file-picker" data-target="flags.{{moduleId}}.frameData.maskImage" title="Browse Files">
+      <i class="fas fa-file-import"></i>
+    </button>
+  </div>
+  <p class="hint">Optional custom mask. White = visible, black/transparent = hidden.</p>
+</div>
+
+<!-- Base Image Settings Header - NOT a form-group -->
+<div class="tfl-subheader" data-token-framer="baseHeader" data-tfl-dependent="true">
+  <label><strong>Base Image Settings</strong></label>
+</div>
+
+<!-- Base Scale -->
+<div class="form-group" data-token-framer="baseScale" data-tfl-dependent="true">
+  <label>Base Scale</label>
+  <div class="form-fields">
+    <input type="range" name="flags.{{moduleId}}.frameData.baseScale" value="{{baseScale}}" min="0.5" max="1.0" step="0.01">
+    <span class="range-value" data-for="flags.{{moduleId}}.frameData.baseScale">{{baseScale}}</span>
+  </div>
+  <p class="hint">Scale factor for the base token image.</p>
+</div>
+
+<!-- Base Offset X/Y -->
+<div class="form-group" data-token-framer="baseOffset" data-tfl-dependent="true">
+  <label>Base Offset</label>
+  <div class="form-fields">
+    <label class="tfl-inline-label">X</label>
+    <input type="number" name="flags.{{moduleId}}.frameData.baseOffsetX" value="{{baseOffsetX}}" step="1" placeholder="0">
+    <label class="tfl-inline-label">Y</label>
+    <input type="number" name="flags.{{moduleId}}.frameData.baseOffsetY" value="{{baseOffsetY}}" step="1" placeholder="0">
+  </div>
+  <p class="hint">Pixel offset for the base image position.</p>
+</div>
+
+<!-- Mask Settings Header - NOT a form-group -->
+<div class="tfl-subheader" data-token-framer="maskHeader" data-tfl-dependent="true">
+  <label><strong>Mask Settings</strong></label>
+</div>
+
+<!-- Mask Radius (for circular mask) -->
+<div class="form-group" data-token-framer="maskRadius" data-tfl-dependent="true">
+  <label>Mask Radius</label>
+  <div class="form-fields">
+    <input type="range" name="flags.{{moduleId}}.frameData.maskRadius" value="{{maskRadius}}" min="0.5" max="1.0" step="0.01">
+    <span class="range-value" data-for="flags.{{moduleId}}.frameData.maskRadius">{{maskRadius}}</span>
+  </div>
+  <p class="hint">Radius of the circular mask (when no custom mask image is set).</p>
+</div>
+
+<!-- Mask Scale (for custom mask image) -->
+<div class="form-group" data-token-framer="maskScale" data-tfl-dependent="true">
+  <label>Mask Scale</label>
+  <div class="form-fields">
+    <input type="range" name="flags.{{moduleId}}.frameData.maskScale" value="{{maskScale}}" min="0.5" max="1.5" step="0.01">
+    <span class="range-value" data-for="flags.{{moduleId}}.frameData.maskScale">{{maskScale}}</span>
+  </div>
+  <p class="hint">Scale factor for custom mask image.</p>
+</div>
+
+<!-- Mask Offset X/Y -->
+<div class="form-group" data-token-framer="maskOffset" data-tfl-dependent="true">
+  <label>Mask Offset</label>
+  <div class="form-fields">
+    <label class="tfl-inline-label">X</label>
+    <input type="number" name="flags.{{moduleId}}.frameData.maskOffsetX" value="{{maskOffsetX}}" step="1" placeholder="0">
+    <label class="tfl-inline-label">Y</label>
+    <input type="number" name="flags.{{moduleId}}.frameData.maskOffsetY" value="{{maskOffsetY}}" step="1" placeholder="0">
+  </div>
+  <p class="hint">Pixel offset for the mask position.</p>
+</div>
+
+<!-- Frame Settings Header - NOT a form-group -->
+<div class="tfl-subheader" data-token-framer="frameHeader" data-tfl-dependent="true">
+  <label><strong>Frame Settings</strong></label>
+</div>
+
+<!-- Frame Scale -->
+<div class="form-group" data-token-framer="frameScale" data-tfl-dependent="true">
+  <label>Frame Scale</label>
+  <div class="form-fields">
+    <input type="range" name="flags.{{moduleId}}.frameData.frameScale" value="{{frameScale}}" min="0.5" max="1.5" step="0.01">
+    <span class="range-value" data-for="flags.{{moduleId}}.frameData.frameScale">{{frameScale}}</span>
+  </div>
+  <p class="hint">Scale factor for the frame overlay image.</p>
+</div>
+
+<!-- Frame Offset X/Y -->
+<div class="form-group" data-token-framer="frameOffset" data-tfl-dependent="true">
+  <label>Frame Offset</label>
+  <div class="form-fields">
+    <label class="tfl-inline-label">X</label>
+    <input type="number" name="flags.{{moduleId}}.frameData.frameOffsetX" value="{{frameOffsetX}}" step="1" placeholder="0">
+    <label class="tfl-inline-label">Y</label>
+    <input type="number" name="flags.{{moduleId}}.frameData.frameOffsetY" value="{{frameOffsetY}}" step="1" placeholder="0">
+  </div>
+  <p class="hint">Pixel offset for the frame position.</p>
+</div>
+
+<!-- Action Buttons - NOT a form-group to avoid TVA checkbox -->
+<div class="tfl-actions-section" data-token-framer="actions" data-tfl-dependent="true">
+  <button type="button" class="tfl-preview-button">
+    <i class="fas fa-sync"></i>
+    Apply Frame
+  </button>
+  <button type="button" class="tfl-restore-button">
+    <i class="fas fa-undo"></i>
+    Restore Original
+  </button>
+</div>

@@ -1,0 +1,69 @@
+{
+  "TOKEN-FRAMER": {
+    "Notifications": {
+      "NoImagePath": "No image path found. Please set a token image first.",
+      "CachedImageWarning": "The image path is from Token Framer's cache. There is no need to refresh at this time."
+    },
+    "Settings": {
+      "DebugMode": {
+        "Name": "Debug Mode",
+        "Hint": "Enable debug logging to the console for troubleshooting."
+      },
+      "CacheFolder": {
+        "Name": "Cache Folder",
+        "Hint": "Folder path for cached frame images. Leave empty for default (worlds/[world-id]/token-framer-cache)."
+      },
+      "CacheResolution": {
+        "Name": "Cache Image Resolution",
+        "Hint": "Size of cached frame images in pixels. Value is used for both width and height (e.g., 1000 = 1000x1000)."
+      },
+      "CacheQuality": {
+        "Name": "Cache Image Quality",
+        "Hint": "WebP quality for cached images (0.5 = 50%, 1.0 = 100%). Higher quality means larger file sizes."
+      },
+      "DefaultMaskRadius": {
+        "Name": "Default Mask Radius",
+        "Hint": "Default radius for auto-generated circular masks (0.5 to 1.0)."
+      },
+      "DefaultBaseScale": {
+        "Name": "Default Base Scale",
+        "Hint": "Default scale for the base token image when a frame is applied (0.5 to 1.0)."
+      }
+    },
+    "Config": {
+      "Title": "Token Frame",
+      "Enable": "Enable Frame",
+      "EnableHint": "Apply a frame overlay to this token.",
+      "FrameImage": "Frame Image",
+      "FrameImageHint": "Path to the frame overlay image (PNG, WEBP recommended).",
+      "MaskImage": "Mask Image (Optional)",
+      "MaskImageHint": "Custom mask image. White areas are visible. Leave empty for circular mask.",
+      "AutoCircular": "Auto (circular)",
+      "BrowseFiles": "Browse Files",
+      "Clear": "Clear",
+      "BaseImageSettings": "Base Image Settings",
+      "BaseScale": "Base Scale",
+      "BaseScaleHint": "Scale factor for the base token image (shrinks to fit inside frame).",
+      "BaseOffset": "Base Offset",
+      "BaseOffsetHint": "Pixel offset for the base image position (X and Y).",
+      "MaskSettings": "Mask Settings",
+      "MaskRadius": "Mask Radius",
+      "MaskRadiusHint": "Radius of the circular mask (when no custom mask image is set).",
+      "MaskScale": "Mask Scale",
+      "MaskScaleHint": "Scale factor for custom mask image.",
+      "MaskOffset": "Mask Offset",
+      "MaskOffsetHint": "Pixel offset for the mask position (X and Y).",
+      "FrameSettings": "Frame Settings",
+      "FrameScale": "Frame Scale",
+      "FrameScaleHint": "Scale factor for the frame overlay image.",
+      "FrameOffset": "Frame Offset",
+      "FrameOffsetHint": "Pixel offset for the frame position (X and Y).",
+      "Preview": "Preview",
+      "PreviewPlaceholder": "Select a frame image",
+      "Refresh": "Refresh",
+      "RefreshHint": "Refresh from Image Path field",
+      "ApplyFrame": "Apply Frame",
+      "RestoreOriginal": "Restore Original"
+    }
+  }
+}

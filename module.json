@@ -1,0 +1,35 @@
+{
+  "id": "token-framer",
+  "title": "Token Framer",
+  "description": "Add pog-style frames to tokens by compositing the base image with a frame overlay. The result is cached for performance. Fully compatible with Token Variant Art.",
+  "version": "1.0.1",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "authors": [
+    {
+      "name": "Sisimshow"
+    }
+  ],
+  "esmodules": [
+    "scripts/main.js"
+  ],
+  "styles": [
+    "styles/token-framer.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "url": "",
+  "manifest": "",
+  "download": "",
+  "license": "MIT",
+  "readme": "",
+  "bugs": "",
+  "changelog": ""
+}
