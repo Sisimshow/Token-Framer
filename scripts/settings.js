@@ -4,11 +4,32 @@
  */
 
 import { MODULE_ID } from './main.js';
+import { applyFrameToToken, generateFrameForPrototype, regenerateAllFrames } from './frame-layer.js';
 
 /**
  * Register module settings
  */
 export function registerSettings() {
+  game.settings.registerMenu(MODULE_ID, 'regenerateCache', {
+    name: 'TOKEN-FRAMER.Settings.Regenerate.Name',
+    label: 'TOKEN-FRAMER.Settings.Regenerate.Label',
+    hint: 'TOKEN-FRAMER.Settings.Regenerate.Hint',
+    icon: 'fas fa-sync',
+    type: TokenFramerMaintenance,
+    restricted: true
+  });
+
+  // Default frame image
+  game.settings.register(MODULE_ID, 'defaultFrameImage', {
+    name: 'TOKEN-FRAMER.Settings.DefaultFrameImage.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultFrameImage.Hint',
+    scope: 'world',
+    config: true,
+    type: String,
+    default: 'modules/token-framer/assets/default.webp',
+    filePicker: 'imagevideo'
+  });
+
   // Cache folder location
   game.settings.register(MODULE_ID, 'cacheFolder', {
     name: 'TOKEN-FRAMER.Settings.CacheFolder.Name',
@@ -84,4 +105,16 @@ export function registerSettings() {
     type: Boolean,
     default: false
   });
+}
+
+/**
+ * A "Dummy" Application class.
+ * This satisfies the requirement for 'registerMenu' but overrides render() 
+ * to just run our function instead of opening a window.
+ */
+class TokenFramerMaintenance extends FormApplication {
+  render() {
+    regenerateAllFrames();
+    return this;
+  }
 }

@@ -26,7 +26,8 @@ export function registerTokenConfigHooks() {
 function getDefaultSettings() {
   return {
     baseScale: game.settings.get(MODULE_ID, 'defaultBaseScale') ?? 0.9,
-    maskRadius: game.settings.get(MODULE_ID, 'defaultMaskRadius') ?? 0.95
+    maskRadius: game.settings.get(MODULE_ID, 'defaultMaskRadius') ?? 0.95,
+	defaultFrameImage: game.settings.get(MODULE_ID, 'defaultFrameImage') ?? 'modules/token-framer/assets/default.webp'
   };
 }
 
@@ -231,7 +232,7 @@ async function renderTokenFrameSettings(app, html, data) {
     moduleId: MODULE_ID,
     originalImage,
     frameEnabled: frameData.enabled ? 'checked' : '',
-    frameImage: frameData.frameImage ?? '',
+    frameImage: frameData.frameImage ?? defaults.defaultFrameImage,
     maskImage: frameData.maskImage ?? '',
     baseScale: frameData.baseScale ?? defaults.baseScale,
     baseOffsetX: frameData.baseOffsetX ?? 0,

@@ -5,6 +5,15 @@
       "CachedImageWarning": "The image path is from Token Framer's cache. There is no need to refresh at this time."
     },
     "Settings": {
+      "Regenerate": {
+        "Name": "Regenerate Cache",
+        "Label": "Regenerate Cache",
+        "Hint": "Regenerate the token frame cache for all actors and tokens in the loaded world."
+      },
+	  "DefaultFrameImage": {
+        "Name": "Default Frame Image",
+        "Hint": "The default frame image path to use when enabling frames for the first time."
+      },
       "DebugMode": {
         "Name": "Debug Mode",
         "Hint": "Enable debug logging to the console for troubleshooting."
