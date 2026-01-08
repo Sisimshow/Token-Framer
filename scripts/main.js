@@ -4,7 +4,7 @@
  * Fixed to handle Restore actions and Base Image updates correctly.
  */
 
-import { applyFrameToToken, getFrameData, generateFrameForPrototype } from './frame-layer.js';
+import { applyFrameToToken, getFrameData, generateFrameForPrototype, getFramedPathForImage } from './frame-layer.js';
 import { registerTokenConfigHooks } from './token-config.js';
 import { registerSettings } from './settings.js';
 
@@ -77,12 +77,58 @@ Hooks.on('preUpdateToken', (document, changes, options, userId) => {
 });
 
 /**
+ * FIX: Intercept Prototype Token Updates (Actor)
+ * Ensures that changing the image path in the prototype token config works
+ */
+Hooks.on('preUpdateActor', async (actor, changes, options, userId) => {
+  if (!actor.isOwner) return;
+
+  // 1. Check if prototype token texture is changing
+  const newTexture = changes.prototypeToken?.texture?.src;
+  if (!newTexture) return;
+
+  // 2. Ignore if it's already a cached file
+  const cacheFolder = game.settings.get(MODULE_ID, 'cacheFolder') || 'token-framer-cache';
+  if (newTexture.includes(cacheFolder) || newTexture.includes('token-framer-cache')) return;
+
+  // 3. Sync the "Original Image" flag with the new Texture
+  // This ensures that even if Frame is disabled, or generation fails, 
+  // the actor remembers this is the new "Base Image".
+  foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.originalImage`, newTexture);
+
+  // 4. Check if Frame is Enabled
+  const frameData = actor.prototypeToken.getFlag(MODULE_ID, 'frameData');
+  
+  if (!frameData?.enabled || !frameData?.frameImage) return;
+
+  debugLog('🎨 Prototype Token: Intercepting image update...');
+
+  try {
+    // 5. Generate the frame
+    // We pass true for isPrototype to ensure correct cache key prefix
+    const result = await getFramedPathForImage(newTexture, frameData, actor.id, true);
+
+    if (result) {
+      // 6. Update the changes object to use the framed image
+      foundry.utils.setProperty(changes, 'prototypeToken.texture.src', result.path);
+      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.currentCacheKey`, result.key);
+      
+      // CRITICAL: Save the cached path so preCreateToken works for new tokens
+      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.cachedFramePath`, result.path);
+      
+      debugLog('✅ Prototype Token: Applied frame', result.path);
+    }
+  } catch (err) {
+    console.error(`${MODULE_ID} | Failed to intercept prototype token update:`, err);
+  }
+});
+
+/**
  * Performs the frame generation and re-issues the update
  */
 async function performAsyncFrameUpdate(document, originalChanges, baseImage, frameData) {
   try {
-    const { getFramedPathForImage } = await import('./frame-layer.js');
-    
+    // We imported this at the top now, so we can use it directly
     debugLog('🎨 Generating frame...');
     const result = await getFramedPathForImage(baseImage, frameData, document.id);
 
