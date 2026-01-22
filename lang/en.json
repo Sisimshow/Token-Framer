@@ -43,6 +43,12 @@
       "Title": "Token Frame",
       "Enable": "Enable Frame",
       "EnableHint": "Apply a frame overlay to this token.",
+      "Background": "Background",
+      "BackgroundEnable": "Enable",
+      "BackgroundColor": "Color",
+      "BackgroundHint": "Use color picker on the preview to sample colors.",
+      "BaseImage": "Base Image",
+      "BaseImageInputHint": "The token image before framing. Edit directly or use Refresh Preview above.",
       "FrameImage": "Frame Image",
       "FrameImageHint": "Path to the frame overlay image (PNG, WEBP recommended).",
       "MaskImage": "Mask Image (Optional)",
@@ -67,12 +73,15 @@
       "FrameScaleHint": "Scale factor for the frame overlay image.",
       "FrameOffset": "Frame Offset",
       "FrameOffsetHint": "Pixel offset for the frame position (X and Y).",
+      "LabelX": "X",
+      "LabelY": "Y",
       "Preview": "Preview",
       "PreviewPlaceholder": "Select a frame image",
       "Refresh": "Refresh",
       "RefreshHint": "Refresh from Image Path field",
       "ApplyFrame": "Apply Frame",
-      "RestoreOriginal": "Restore Original"
+      "RestoreOriginal": "Remove Frame",
+      "PrototypeWarning": "If editing a Prototype Token for the first time, click Apply Frame."
     }
   }
 }
