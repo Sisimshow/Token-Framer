@@ -1,0 +1,168 @@
+<form class="token-framer-dialog">
+  <div class="tfl-dialog-layout">
+    
+    <!-- Left Column: Preview -->
+    <div class="tfl-preview-section">
+      <label>{{localize "TOKEN-FRAMER.Config.Preview"}}</label>
+      <div class="tfl-preview-wrapper">
+        <div class="tfl-preview-placeholder">
+          <i class="fas fa-image"></i>
+          <span>{{localize "TOKEN-FRAMER.Config.PreviewPlaceholder"}}</span>
+        </div>
+        <div class="tfl-preview-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <img class="tfl-preview-image" src="" alt="{{localize 'TOKEN-FRAMER.Config.Preview'}}">
+      </div>
+      <button type="button" class="tfl-refresh-button" title="{{localize 'TOKEN-FRAMER.Config.RefreshHint'}}">
+        <i class="fas fa-sync-alt"></i>
+        {{localize "TOKEN-FRAMER.Config.RefreshFromToken"}}
+      </button>
+    </div>
+
+    <!-- Right Column: Settings -->
+    <div class="tfl-settings-section">
+      
+      <!-- Base Image -->
+      <div class="tfl-form-group">
+        <label>{{localize "TOKEN-FRAMER.Config.BaseImage"}}</label>
+        <div class="tfl-form-fields">
+          <input type="text" name="baseImage" value="{{baseImage}}" placeholder="path/to/base-image.webp">
+          <button type="button" class="tfl-icon-button tfl-file-picker" data-target="baseImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
+            <i class="fas fa-file-import"></i>
+          </button>
+        </div>
+        <p class="hint">{{localize "TOKEN-FRAMER.Config.BaseImageInputHint"}}</p>
+      </div>
+
+      <!-- Frame Image -->
+      <div class="tfl-form-group">
+        <label>{{localize "TOKEN-FRAMER.Config.FrameImage"}}</label>
+        <div class="tfl-form-fields">
+          <input type="text" name="frameImage" value="{{frameImage}}" placeholder="path/to/frame.webp">
+          <button type="button" class="tfl-icon-button tfl-file-picker" data-target="frameImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
+            <i class="fas fa-file-import"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mask Image -->
+      <div class="tfl-form-group">
+        <label>{{localize "TOKEN-FRAMER.Config.MaskImage"}}</label>
+        <div class="tfl-form-fields">
+          <input type="text" name="maskImage" value="{{maskImage}}" placeholder="{{localize 'TOKEN-FRAMER.Config.AutoCircular'}}">
+          <button type="button" class="tfl-icon-button tfl-file-picker" data-target="maskImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
+            <i class="fas fa-file-import"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Base Image Settings -->
+      <div class="tfl-subheader">
+        <label>{{localize "TOKEN-FRAMER.Config.BaseImageSettings"}}</label>
+      </div>
+
+      <div class="tfl-form-group">
+        <label>{{localize "TOKEN-FRAMER.Config.BaseScale"}}</label>
+        <div class="tfl-form-fields">
+          <input type="range" name="baseScale" value="{{baseScale}}" min="0.5" max="1.0" step="0.01">
+          <span class="range-value" data-for="baseScale">{{baseScale}}</span>
+        </div>
+      </div>
+
+      <div class="tfl-form-group tfl-offset-group">
+        <label>{{localize "TOKEN-FRAMER.Config.BaseOffset"}}</label>
+        <div class="tfl-form-fields">
+          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+          <input type="number" name="baseOffsetX" value="{{baseOffsetX}}" step="1" placeholder="0">
+          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+          <input type="number" name="baseOffsetY" value="{{baseOffsetY}}" step="1" placeholder="0">
+        </div>
+      </div>
+
+      <!-- Mask Settings -->
+      <div class="tfl-subheader">
+        <label>{{localize "TOKEN-FRAMER.Config.MaskSettings"}}</label>
+      </div>
+
+      <div class="tfl-form-group">
+        <label>{{localize "TOKEN-FRAMER.Config.MaskRadius"}}</label>
+        <div class="tfl-form-fields">
+          <input type="range" name="maskRadius" value="{{maskRadius}}" min="0.5" max="1.0" step="0.01">
+          <span class="range-value" data-for="maskRadius">{{maskRadius}}</span>
+        </div>
+      </div>
+
+      <div class="tfl-form-group">
+        <label>{{localize "TOKEN-FRAMER.Config.MaskScale"}}</label>
+        <div class="tfl-form-fields">
+          <input type="range" name="maskScale" value="{{maskScale}}" min="0.5" max="1.5" step="0.01">
+          <span class="range-value" data-for="maskScale">{{maskScale}}</span>
+        </div>
+      </div>
+
+      <div class="tfl-form-group tfl-offset-group">
+        <label>{{localize "TOKEN-FRAMER.Config.MaskOffset"}}</label>
+        <div class="tfl-form-fields">
+          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+          <input type="number" name="maskOffsetX" value="{{maskOffsetX}}" step="1" placeholder="0">
+          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+          <input type="number" name="maskOffsetY" value="{{maskOffsetY}}" step="1" placeholder="0">
+        </div>
+      </div>
+
+      <!-- Frame Settings -->
+      <div class="tfl-subheader">
+        <label>{{localize "TOKEN-FRAMER.Config.FrameSettings"}}</label>
+      </div>
+
+      <div class="tfl-form-group">
+        <label>{{localize "TOKEN-FRAMER.Config.FrameScale"}}</label>
+        <div class="tfl-form-fields">
+          <input type="range" name="frameScale" value="{{frameScale}}" min="0.5" max="1.5" step="0.01">
+          <span class="range-value" data-for="frameScale">{{frameScale}}</span>
+        </div>
+      </div>
+
+      <div class="tfl-form-group tfl-offset-group">
+        <label>{{localize "TOKEN-FRAMER.Config.FrameOffset"}}</label>
+        <div class="tfl-form-fields">
+          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+          <input type="number" name="frameOffsetX" value="{{frameOffsetX}}" step="1" placeholder="0">
+          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+          <input type="number" name="frameOffsetY" value="{{frameOffsetY}}" step="1" placeholder="0">
+        </div>
+      </div>
+
+      <!-- Background Settings -->
+      <div class="tfl-subheader">
+        <label>{{localize "TOKEN-FRAMER.Config.Background"}}</label>
+      </div>
+
+      <div class="tfl-form-group tfl-bg-row">
+        <div class="tfl-bg-enable">
+          <input type="checkbox" name="bgEnabled" id="tfl-bg-enabled" {{bgEnabled}}>
+          <label for="tfl-bg-enabled">{{localize "TOKEN-FRAMER.Config.BackgroundEnable"}}</label>
+        </div>
+        <div class="tfl-bg-color">
+          <label>{{localize "TOKEN-FRAMER.Config.BackgroundColor"}}</label>
+          <input type="color" name="bgColor" value="{{bgColor}}" class="tfl-color-picker">
+          <input type="text" name="bgColorText" value="{{bgColor}}" class="tfl-color-text" placeholder="#000000">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer Actions -->
+  <footer class="tfl-dialog-footer">
+    <button type="button" class="tfl-restore-button">
+      <i class="fas fa-undo"></i>
+      {{localize "TOKEN-FRAMER.Config.RestoreOriginal"}}
+    </button>
+    <button type="button" class="tfl-apply-button">
+      <i class="fas fa-check"></i>
+      {{localize "TOKEN-FRAMER.Config.ApplyFrame"}}
+    </button>
+  </footer>
+</form>

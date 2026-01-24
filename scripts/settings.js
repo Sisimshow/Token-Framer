@@ -4,7 +4,7 @@
  */
 
 import { MODULE_ID } from './main.js';
-import { applyFrameToToken, generateFrameForPrototype, regenerateAllFrames } from './frame-layer.js';
+import { regenerateAllFrames } from './frame-layer.js';
 
 /**
  * Register module settings

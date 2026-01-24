@@ -1,11 +1,13 @@
 /**
  * Token Framer - Main Entry Point
- * Implements "Stop & Swap" pattern to prevent FOUC (Flash of Unframed Content)
- * Fixed to handle Restore actions and Base Image updates correctly.
+ * 
+ * Implements "Stop & Swap" pattern to prevent FOUC (Flash of Unframed Content).
+ * For placed tokens: intercepts texture changes and applies framing before render.
+ * For prototype tokens: merges pending frame data from the dialog on form submission.
  */
 
 import { applyFrameToToken, getFrameData, generateFrameForPrototype, getFramedPathForImage } from './frame-layer.js';
-import { registerTokenConfigHooks } from './token-config.js';
+import { registerTokenConfigHooks, getPendingPrototypeData, clearPendingPrototypeData } from './token-config.js';
 import { registerSettings } from './settings.js';
 
 export const MODULE_ID = 'token-framer';
@@ -79,41 +81,75 @@ Hooks.on('preUpdateToken', (document, changes, options, userId) => {
 /**
  * FIX: Intercept Prototype Token Updates (Actor)
  * Ensures that changing the image path in the prototype token config works
+ * Also handles pending frame data from the Token Framer dialog
  */
 Hooks.on('preUpdateActor', async (actor, changes, options, userId) => {
   if (!actor.isOwner) return;
 
-  // 1. Check if prototype token texture is changing
+  // Check for pending data from Token Framer dialog
+  const pendingData = getPendingPrototypeData(actor.id);
+  
+  if (pendingData) {
+    debugLog('🔄 Prototype Token: Found pending Token Framer data');
+    
+    if (pendingData.restore) {
+      // Restore operation - clear frame data and set original image
+      foundry.utils.setProperty(changes, 'prototypeToken.texture.src', pendingData.originalImage);
+      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.-=frameData`, null);
+      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.-=originalImage`, null);
+      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.-=currentCacheKey`, null);
+      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.-=cachedFramePath`, null);
+      debugLog('✅ Prototype Token: Restore data merged into changes');
+    } else {
+      // Apply frame operation - merge all frame data
+      foundry.utils.setProperty(changes, 'prototypeToken.texture.src', pendingData.cachedPath);
+      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.frameData`, pendingData.frameData);
+      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.originalImage`, pendingData.originalImage);
+      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.cachedFramePath`, pendingData.cachedPath);
+      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.currentCacheKey`, 
+        pendingData.cachedPath.split('/').pop().replace('.webp', '').split('?')[0]);
+      debugLog('✅ Prototype Token: Frame data merged into changes', pendingData.cachedPath);
+    }
+    
+    // Clear the pending data
+    clearPendingPrototypeData(actor.id);
+    return;
+  }
+
+  // Standard interception for non-dialog image changes (e.g., TVA, manual edit)
   const newTexture = changes.prototypeToken?.texture?.src;
   if (!newTexture) return;
 
-  // 2. Ignore if it's already a cached file
+  // Ignore if it's already a cached file
   const cacheFolder = game.settings.get(MODULE_ID, 'cacheFolder') || 'token-framer-cache';
   if (newTexture.includes(cacheFolder) || newTexture.includes('token-framer-cache')) return;
 
-  // 3. Sync the "Original Image" flag with the new Texture
-  // This ensures that even if Frame is disabled, or generation fails, 
-  // the actor remembers this is the new "Base Image".
-  foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.originalImage`, newTexture);
-
-  // 4. Check if Frame is Enabled
-  const frameData = actor.prototypeToken.getFlag(MODULE_ID, 'frameData');
+  // Check if Frame is Enabled - check BOTH saved state AND pending changes
+  const savedFrameData = actor.prototypeToken.getFlag(MODULE_ID, 'frameData');
+  const pendingFrameData = changes.prototypeToken?.flags?.[MODULE_ID]?.frameData;
   
-  if (!frameData?.enabled || !frameData?.frameImage) return;
+  // Merge saved and pending, with pending taking priority
+  const frameData = pendingFrameData 
+    ? { ...savedFrameData, ...pendingFrameData }
+    : savedFrameData;
+  
+  if (!frameData?.enabled || !frameData?.frameImage) {
+    return;
+  }
 
   debugLog('🎨 Prototype Token: Intercepting image update...');
 
+  // Sync the "Original Image" flag with the new Texture
+  foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.originalImage`, newTexture);
+
   try {
-    // 5. Generate the frame
-    // We pass true for isPrototype to ensure correct cache key prefix
+    // Generate the frame
     const result = await getFramedPathForImage(newTexture, frameData, actor.id, true);
 
     if (result) {
-      // 6. Update the changes object to use the framed image
+      // Update the changes object to use the framed image
       foundry.utils.setProperty(changes, 'prototypeToken.texture.src', result.path);
       foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.currentCacheKey`, result.key);
-      
-      // CRITICAL: Save the cached path so preCreateToken works for new tokens
       foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.cachedFramePath`, result.path);
       
       debugLog('✅ Prototype Token: Applied frame', result.path);
@@ -261,13 +297,20 @@ Hooks.on('updateActor', async (actor, changes, options, userId) => {
   if (!frameDataChanged && !originalImageChanged) return;
   
   const frameData = actor.prototypeToken?.getFlag?.(MODULE_ID, 'frameData');
+  const cacheFolder = game.settings.get(MODULE_ID, 'cacheFolder') || `worlds/${game.world.id}/token-framer-cache`;
   
   if (frameData?.enabled && frameData?.frameImage) {
+    // Check if texture is ALREADY a cached path - if so, no need to regenerate
+    const currentTexture = actor.prototypeToken?.texture?.src || '';
+    if (currentTexture.includes(cacheFolder) || currentTexture.includes('token-framer-cache')) {
+      debugLog('Prototype token texture already cached, skipping regeneration');
+      return;
+    }
+    
     const originalImage = actor.prototypeToken?.getFlag?.(MODULE_ID, 'originalImage') 
-                       || actor.prototypeToken?.texture?.src;
+                       || currentTexture;
     if (!originalImage) return;
     
-    const cacheFolder = game.settings.get(MODULE_ID, 'cacheFolder') || `worlds/${game.world.id}/token-framer-cache`;
     if (originalImage.includes(cacheFolder) || originalImage.includes('token-framer-cache')) return;
     
     debugLog('Generating frame for prototype token via updateActor');

@@ -2,7 +2,13 @@
   "TOKEN-FRAMER": {
     "Notifications": {
       "NoImagePath": "No image path found. Please set a token image first.",
-      "CachedImageWarning": "The image path is from Token Framer's cache. There is no need to refresh at this time."
+      "CachedImageWarning": "The image path is from Token Framer's cache. There is no need to refresh at this time.",
+      "FrameApplied": "Token frame applied successfully.",
+      "FrameGenerated": "Frame generated. Click 'Update Token' to save all changes.",
+      "FrameRemoved": "Token frame removed. Original image restored.",
+      "FrameWillBeRemoved": "Frame will be removed. Click 'Update Token' to save changes.",
+      "NoBaseImage": "Please set a base image first.",
+      "NoFrameImage": "Please set a frame image first."
     },
     "Settings": {
       "Regenerate": {
@@ -41,14 +47,17 @@
     },
     "Config": {
       "Title": "Token Frame",
-      "Enable": "Enable Frame",
+      "DialogTitle": "Token Frame Settings",
+      "Enable": "Enable",
       "EnableHint": "Apply a frame overlay to this token.",
+      "ConfigureFrame": "Configure",
+      "ControlsHint": "Enable to auto-apply frames to this token. Click Configure to customize frame settings.",
       "Background": "Background",
       "BackgroundEnable": "Enable",
       "BackgroundColor": "Color",
       "BackgroundHint": "Use color picker on the preview to sample colors.",
       "BaseImage": "Base Image",
-      "BaseImageInputHint": "The token image before framing. Edit directly or use Refresh Preview above.",
+      "BaseImageInputHint": "The token image before framing. Use the button below the preview to sync from Image Path.",
       "FrameImage": "Frame Image",
       "FrameImageHint": "Path to the frame overlay image (PNG, WEBP recommended).",
       "MaskImage": "Mask Image (Optional)",
@@ -78,7 +87,8 @@
       "Preview": "Preview",
       "PreviewPlaceholder": "Select a frame image",
       "Refresh": "Refresh",
-      "RefreshHint": "Refresh from Image Path field",
+      "RefreshHint": "Sync base image from the token's Image Path field",
+      "RefreshFromToken": "Sync from Image Path",
       "ApplyFrame": "Apply Frame",
       "RestoreOriginal": "Remove Frame",
       "PrototypeWarning": "If editing a Prototype Token for the first time, click Apply Frame."

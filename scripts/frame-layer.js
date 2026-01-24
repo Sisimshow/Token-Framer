@@ -279,17 +279,15 @@ export async function applyFrameToToken(token, forceRegenerate = false) {
   }
 
   // Clear texture cache
-   try {
-       // Modern V12/V13 way
-       if (PIXI.Assets.cache.has(cachedPath)) {
-           await PIXI.Assets.unload(cachedPath);
-       }
-   } catch (e) {
-       // Fallback for older versions or weird states
-       try {
-           PIXI.Texture.removeFromCache(cachedPath);
-       } catch (e2) {}
-   }
+  try {
+    if (PIXI.Assets.cache.has(cachedPath)) {
+      await PIXI.Assets.unload(cachedPath);
+    }
+  } catch (e) {
+    try {
+      PIXI.Texture.removeFromCache(cachedPath);
+    } catch (e2) {}
+  }
 
   await token.document.update({
     'texture.src': `${cachedPath}?t=${Date.now()}`,
@@ -349,14 +347,6 @@ export async function generateFrameForPrototype(baseImagePath, frameData, actorI
     console.error(`${MODULE_ID} | Failed to generate frame for prototype:`, err);
     return null;
   }
-}
-
-/**
- * DEPRECATED: Stubs for compatibility
- * We now handle art changes in main.js via preUpdateToken
- */
-export async function handleBaseImageChange(token, newImagePath) {
-  return;
 }
 
 /**

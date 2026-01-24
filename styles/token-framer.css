@@ -1,109 +1,61 @@
 /**
  * Token Framer - Styles
- * UI styling for Token Configuration integration
- * Updated for TVA compatibility - uses data attributes instead of wrapper classes
- * Non-configurable elements use custom classes instead of form-group
+ * UI styling for Token Configuration controls and Frame Settings dialog
+ * AppV2 compatible with dark mode support
  */
 
-/* ==================== */
-/* Section Header       */
-/* ==================== */
+/* ====================================== */
+/* TOKEN CONFIG - Injected Controls       */
+/* ====================================== */
 
-.tfl-section-header[data-token-framer="header"] {
-  margin-top: 1rem;
-  padding: 0.5rem 0;
-  border-top: 2px solid var(--color-border-light-tertiary);
+.form-group[data-token-framer="controls"] {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--color-border-light-tertiary);
 }
 
-.tfl-section-header[data-token-framer="header"] label {
+.form-group[data-token-framer="controls"] > label {
   font-weight: bold;
-  color: var(--color-text-hyperlink);
 }
 
-/* ==================== */
-/* Subheaders           */
-/* ==================== */
-
-.tfl-subheader[data-token-framer] {
-  margin-top: 0.75rem;
-  padding: 0.5rem 0 0.25rem 0;
-  border-top: 1px solid var(--color-border-light-tertiary);
-}
-
-/* Hidden state for dependent fields */
-[data-tfl-dependent].tfl-hidden {
-  display: none !important;
-}
-
-/* ==================== */
-/* Form Group Styling   */
-/* ==================== */
-
-/* File Picker Button */
-.form-group[data-token-framer] .tfl-file-picker,
-.form-group[data-token-framer] .tfl-original-file-picker {
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-  padding: 0;
+.form-group[data-token-framer="controls"] .tfl-controls-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border: 1px solid var(--color-border-light-tertiary);
-  border-radius: 3px;
-  background: var(--color-bg-btn);
-  cursor: pointer;
-  transition: background-color 0.1s ease;
+  gap: 0.5rem;
 }
 
-.form-group[data-token-framer] .tfl-file-picker:hover,
-.form-group[data-token-framer] .tfl-original-file-picker:hover {
-  background: var(--color-bg-btn-hover);
-}
-
-/* Inline Labels */
-.form-group[data-token-framer] .tfl-inline-label {
-  flex: 0 0 auto;
-  width: 20px;
-  text-align: center;
-  font-weight: bold;
-  opacity: 0.7;
-}
-
-/* Range Value Display */
-.form-group[data-token-framer] .range-value {
-  flex: 0 0 40px;
-  text-align: right;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-12);
-  opacity: 0.8;
-}
-
-/* Input Styling */
-.form-group[data-token-framer] input[type="range"] {
-  flex: 1;
-  height: 6px;
-  margin: 0 0.5rem;
-}
-
-.form-group[data-token-framer] input[type="number"] {
-  flex: 1;
-  min-width: 60px;
-  text-align: center;
-}
-
-.form-group[data-token-framer] input[type="text"] {
-  flex: 1;
-}
-
-.form-group[data-token-framer] input[type="checkbox"] {
+.form-group[data-token-framer="controls"] .tfl-enable-checkbox {
   width: 16px;
   height: 16px;
   margin: 0;
+  flex-shrink: 0;
 }
 
-/* Hint Text */
-.form-group[data-token-framer] .hint {
+.form-group[data-token-framer="controls"] .tfl-enable-label {
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.form-group[data-token-framer="controls"] .tfl-configure-button {
+  flex: 1;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--color-border-light-tertiary);
+  border-radius: 3px;
+  background: rgba(50, 100, 150, 0.2);
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  font-size: var(--font-size-12);
+}
+
+.form-group[data-token-framer="controls"] .tfl-configure-button:hover {
+  background: rgba(50, 100, 150, 0.35);
+}
+
+.form-group[data-token-framer="controls"] .tfl-configure-button i {
+  margin-right: 0.25rem;
+}
+
+.form-group[data-token-framer="controls"] .hint {
   flex: 0 0 100%;
   margin: 0.25rem 0 0 0;
   font-size: var(--font-size-11);
@@ -111,130 +63,82 @@
   font-style: italic;
 }
 
-/* ==================== */
-/* Color Picker         */
-/* ==================== */
+/* ====================================== */
+/* DIALOG - AppV2 Compatible Container    */
+/* ====================================== */
 
-.form-group[data-token-framer] .tfl-color-picker {
-  flex: 0 0 40px;
-  height: 28px;
-  padding: 2px;
-  border: 1px solid var(--color-border-light-tertiary);
-  border-radius: 3px;
-  cursor: pointer;
+.token-framer-dialog-app {
+  min-width: 1050px;
+  background: var(--color-base-background, #1a1a1a);
+  color: var(--color-text-primary, #f0f0f0);
 }
 
-.form-group[data-token-framer] .tfl-color-text {
-  flex: 1;
-  text-align: center;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
+.token-framer-dialog-app .window-header {
+  background: var(--color-cool-5, #2a2a2a);
+  border-bottom: 1px solid var(--color-border-dark, #444);
 }
 
-/* ================================ */
-/* Preview + Background Side-by-Side */
-/* ================================ */
-
-/* Form-group wrapper for TVA compatibility */
-.form-group[data-token-framer="previewBgRow"] {
-  margin: 0.5rem 0;
+.token-framer-dialog-app .window-header .window-title {
+  color: var(--color-light-1, #eeeeee);
 }
 
-.tfl-preview-bg-row {
+.token-framer-dialog-app .window-header .header-button,
+.token-framer-dialog-app .window-header .close {
+  color: var(--color-light-2, #dddddd);
+}
+
+.token-framer-dialog-app .window-header .header-button:hover,
+.token-framer-dialog-app .window-header .close:hover {
+  color: var(--color-light-1, #ffffff);
+}
+
+.token-framer-dialog-app .window-content {
+  background: var(--color-base-background, #1a1a1a);
+  padding: 0;
+}
+
+.token-framer-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-base-background, #1a1a1a);
+}
+
+/* ====================================== */
+/* DIALOG - Two Column Layout             */
+/* ====================================== */
+
+.tfl-dialog-layout {
   display: flex;
   gap: 1rem;
-  align-items: flex-start;
-}
-
-/* Background Settings Column (Right) */
-.tfl-bg-column {
+  padding: 0.75rem;
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 6px;
+  overflow: hidden;
 }
 
-.tfl-bg-column .tfl-subheader {
-  margin: 0;
-  padding: 0 0 0.25rem 0;
-  border-bottom: 1px solid var(--color-border-light-tertiary);
-}
-
-.tfl-compact-field {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.tfl-compact-field > label {
-  flex: 0 0 auto;
-  min-width: 50px;
-  font-weight: 500;
-}
-
-.tfl-compact-field input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  margin: 0;
-}
-
-.tfl-color-row {
-  display: flex;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.tfl-color-row .tfl-color-picker {
-  flex: 0 0 32px;
-  height: 26px;
-  padding: 2px;
-  border: 1px solid var(--color-border-light-tertiary);
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.tfl-color-row .tfl-color-text {
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-11);
-  text-transform: uppercase;
-}
-
-.tfl-compact-hint {
-  margin: 0.25rem 0 0 0;
-  font-size: var(--font-size-10);
-  opacity: 0.7;
-  font-style: italic;
-}
-
-/* Preview Column (Left) */
-.tfl-preview-column {
-  flex: 1;
+/* Left Column: Preview */
+.tfl-preview-section {
+  flex: 0 0 520px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.tfl-preview-column > label {
-  margin-bottom: 0.25rem;
-  font-weight: bold;
+.tfl-preview-section > label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--color-text-light-highlight, #fff);
 }
 
-.tfl-preview-column .tfl-preview-wrapper {
+.tfl-preview-wrapper {
   position: relative;
-  width: 100%;
-  max-width: 180px;
-  aspect-ratio: 1;
-  border: 2px solid var(--color-border-light-tertiary);
+  width: 500px;
+  height: 500px;
+  border: 2px solid var(--color-border-dark, #444);
   border-radius: 8px;
   background: repeating-conic-gradient(
-    rgba(128, 128, 128, 0.1) 0% 25%,
-    rgba(128, 128, 128, 0.2) 25% 50%
+    rgba(80, 80, 80, 0.3) 0% 25%,
+    rgba(60, 60, 60, 0.3) 25% 50%
   ) 50% / 20px 20px;
   overflow: hidden;
   display: flex;
@@ -242,35 +146,35 @@
   justify-content: center;
 }
 
-.tfl-preview-column .tfl-preview-image {
+.tfl-preview-image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   display: none;
 }
 
-.tfl-preview-column .tfl-preview-placeholder {
+.tfl-preview-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  opacity: 0.6;
+  gap: 1rem;
+  opacity: 0.5;
   text-align: center;
-  padding: 1rem;
+  padding: 2rem;
+  color: var(--color-text-dark-secondary, #999);
 }
 
-.tfl-preview-column .tfl-preview-placeholder i {
-  font-size: 1.5rem;
+.tfl-preview-placeholder i {
+  font-size: 4rem;
   opacity: 0.5;
 }
 
-.tfl-preview-column .tfl-preview-placeholder span {
-  font-size: var(--font-size-11);
-  opacity: 0.7;
+.tfl-preview-placeholder span {
+  font-size: var(--font-size-14);
 }
 
-.tfl-preview-column .tfl-preview-loading {
+.tfl-preview-loading {
   position: absolute;
   top: 0;
   left: 0;
@@ -279,85 +183,323 @@
   display: none;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.5);
   color: white;
-  font-size: 1.5rem;
+  font-size: 3rem;
 }
 
-/* ==================== */
-/* Refresh Preview Button */
-/* ==================== */
-
-.tfl-preview-column .tfl-refresh-base-button {
+/* Refresh Button under Preview */
+.tfl-preview-section > .tfl-refresh-button {
+  margin-top: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  width: 250px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  margin-top: 0.5rem;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid var(--color-border-light-tertiary);
-  border-radius: 3px;
-  background: rgba(50, 100, 150, 0.2);
+  border: 1px solid var(--color-border-dark, #555);
+  border-radius: 4px;
+  background: var(--color-bg-option, #333);
+  color: var(--color-light-2, #dddddd);
   cursor: pointer;
-  transition: background-color 0.1s ease;
   font-size: var(--font-size-11);
+  transition: all 0.15s ease;
 }
 
-.tfl-preview-column .tfl-refresh-base-button:hover {
-  background: rgba(50, 100, 150, 0.4);
+.tfl-preview-section > .tfl-refresh-button:hover {
+  background: var(--color-bg-option-hover, #444);
+  border-color: var(--color-border-highlight, #666);
+  color: var(--color-light-1, #ffffff);
 }
 
-/* ==================== */
-/* Action Buttons       */
-/* ==================== */
+/* Right Column: Settings */
+.tfl-settings-section {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
 
-.tfl-actions-section[data-token-framer="actions"] {
+/* ====================================== */
+/* DIALOG - Form Groups                   */
+/* ====================================== */
+
+.tfl-form-group {
+  margin-bottom: 0.6rem;
+}
+
+.tfl-form-group > label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+  font-size: var(--font-size-12);
+  color: var(--color-text-light-primary, #ddd);
+}
+
+.tfl-form-fields {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tfl-form-group input[type="text"] {
+  flex: 1;
+  background: var(--color-cool-5, #2a2a2a);
+  border: 1px solid var(--color-border-dark, #555);
+  color: var(--color-light-1, #eeeeee);
+  border-radius: 4px;
+  padding: 0.3rem 0.5rem;
+  font-size: var(--font-size-12);
+}
+
+.tfl-form-group input[type="text"]:focus {
+  border-color: var(--color-border-highlight, #888);
+  outline: none;
+  background: var(--color-cool-4, #333);
+}
+
+.tfl-form-group input[type="text"]::placeholder {
+  color: var(--color-text-dark-secondary, #888);
+}
+
+.tfl-form-group input[type="range"] {
+  flex: 1;
+  height: 6px;
+  accent-color: var(--color-shadow-primary, #7a7971);
+}
+
+.tfl-form-group input[type="number"] {
+  flex: 1;
+  min-width: 50px;
+  max-width: 70px;
+  text-align: center;
+  background: var(--color-cool-5, #2a2a2a);
+  border: 1px solid var(--color-border-dark, #555);
+  color: var(--color-light-1, #eeeeee);
+  border-radius: 4px;
+  padding: 0.25rem;
+  font-size: var(--font-size-12);
+}
+
+.tfl-form-group input[type="number"]:focus {
+  border-color: var(--color-border-highlight, #888);
+  outline: none;
+  background: var(--color-cool-4, #333);
+}
+
+.tfl-form-group .hint {
+  margin: 0.2rem 0 0 0;
+  font-size: var(--font-size-11);
+  font-style: italic;
+  color: var(--color-light-3, #bbbbbb);
+}
+
+.tfl-form-group .range-value {
+  flex: 0 0 36px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-11);
+  opacity: 0.8;
+  color: var(--color-text-light-primary, #ddd);
+}
+
+.tfl-inline-label {
+  flex: 0 0 auto;
+  width: 16px;
+  text-align: center;
+  font-weight: 600;
+  opacity: 0.7;
+  font-size: var(--font-size-11);
+  color: var(--color-text-dark-secondary, #aaa);
+}
+
+.tfl-offset-group .tfl-form-fields {
+  justify-content: flex-start;
+}
+
+/* Icon Buttons (File Picker, Refresh) */
+.tfl-icon-button {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-dark, #444);
+  border-radius: 4px;
+  background: var(--color-bg-option, #333);
+  color: var(--color-text-light-primary, #ddd);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tfl-icon-button:hover {
+  background: var(--color-bg-option-hover, #444);
+  border-color: var(--color-border-highlight, #666);
+}
+
+/* ====================================== */
+/* DIALOG - Subheaders                    */
+/* ====================================== */
+
+.tfl-subheader {
+  margin-top: 0.75rem;
+  margin-bottom: 0.4rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--color-border-dark-tertiary, #333);
+}
+
+.tfl-subheader label {
+  font-size: var(--font-size-11);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-dark-secondary, #888);
+}
+
+/* ====================================== */
+/* DIALOG - Background Settings Row       */
+/* ====================================== */
+
+.tfl-bg-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.tfl-bg-enable {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tfl-bg-enable input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--color-shadow-primary, #7a7971);
+}
+
+.tfl-bg-enable label {
+  font-weight: 500;
+  font-size: var(--font-size-12);
+  color: var(--color-text-light-primary, #ddd);
+  cursor: pointer;
+}
+
+.tfl-bg-color {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tfl-bg-color > label {
+  font-size: var(--font-size-12);
+  color: var(--color-text-dark-secondary, #aaa);
+}
+
+.tfl-color-picker {
+  width: 32px;
+  height: 26px;
+  padding: 2px;
+  border: 1px solid var(--color-border-dark, #444);
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.tfl-color-text {
+  width: 80px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-11);
+  text-transform: uppercase;
+  background: var(--color-cool-5, #2a2a2a);
+  border: 1px solid var(--color-border-dark, #555);
+  color: var(--color-light-1, #eeeeee);
+  border-radius: 4px;
+  padding: 0.25rem;
+}
+
+.tfl-color-text:focus {
+  border-color: var(--color-border-highlight, #888);
+  outline: none;
+  background: var(--color-cool-4, #333);
+}
+
+/* ====================================== */
+/* DIALOG - Footer Actions                */
+/* ====================================== */
+
+.tfl-dialog-footer {
   display: flex;
   gap: 0.5rem;
-  margin: 1rem 0 0.5rem 0;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--color-border-light-tertiary);
+  padding: 0.75rem;
+  border-top: 1px solid var(--color-border-dark, #333);
+  background: var(--color-bg-option, rgba(30, 30, 30, 0.8));
 }
 
-.tfl-actions-section button {
+.tfl-dialog-footer button {
   flex: 1;
   padding: 0.5rem 1rem;
-  border: 1px solid var(--color-border-light-tertiary);
-  border-radius: 3px;
-  background: var(--color-bg-btn);
+  border: 1px solid var(--color-border-dark, #444);
+  border-radius: 4px;
+  background: var(--color-bg-option, #333);
+  color: var(--color-text-light-primary, #ddd);
   cursor: pointer;
-  font-size: var(--font-size-12);
-  transition: background-color 0.1s ease;
+  font-size: var(--font-size-13);
+  font-weight: 500;
+  transition: all 0.15s ease;
 }
 
-.tfl-actions-section button:hover {
-  background: var(--color-bg-btn-hover);
+.tfl-dialog-footer button:hover {
+  background: var(--color-bg-option-hover, #444);
+  border-color: var(--color-border-highlight, #666);
 }
 
-.tfl-actions-section .tfl-preview-button {
-  background: rgba(50, 150, 50, 0.2);
+.tfl-dialog-footer .tfl-apply-button {
+  background: rgba(50, 140, 50, 0.3);
+  border-color: rgba(50, 140, 50, 0.5);
 }
 
-.tfl-actions-section .tfl-preview-button:hover {
-  background: rgba(50, 150, 50, 0.35);
+.tfl-dialog-footer .tfl-apply-button:hover {
+  background: rgba(50, 140, 50, 0.45);
+  border-color: rgba(50, 140, 50, 0.7);
 }
 
-.tfl-actions-section .tfl-restore-button {
-  background: rgba(150, 100, 50, 0.2);
+.tfl-dialog-footer .tfl-restore-button {
+  background: rgba(180, 100, 40, 0.25);
+  border-color: rgba(180, 100, 40, 0.4);
 }
 
-.tfl-actions-section .tfl-restore-button:hover {
-  background: rgba(150, 100, 50, 0.35);
+.tfl-dialog-footer .tfl-restore-button:hover {
+  background: rgba(180, 100, 40, 0.4);
+  border-color: rgba(180, 100, 40, 0.6);
 }
 
-.tfl-actions-section button i {
-  margin-right: 0.25rem;
+.tfl-dialog-footer button i {
+  margin-right: 0.35rem;
 }
 
-/* ==================== */
-/* Base Image Field     */
-/* ==================== */
+/* ====================================== */
+/* Scrollbar Styling (Dark Mode)          */
+/* ====================================== */
 
-.form-group[data-token-framer="originalImage"] .tfl-original-path {
-  flex: 1;
+.tfl-settings-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tfl-settings-section::-webkit-scrollbar-track {
+  background: var(--color-bg-option, #222);
+  border-radius: 3px;
+}
+
+.tfl-settings-section::-webkit-scrollbar-thumb {
+  background: var(--color-border-dark, #444);
+  border-radius: 3px;
+}
+
+.tfl-settings-section::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-highlight, #666);
 }

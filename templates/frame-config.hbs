@@ -1,183 +1,20 @@
-<div class="tfl-section-header" data-token-framer="header">
-  <label style="font-weight: bold; color: var(--color-text-hyperlink);">
-    <i class="fas fa-circle-notch" style="margin-right: 0.25rem;"></i>
+{{!-- Token Framer - Injected into Token Config below Image Path --}}
+<div class="form-group" data-token-framer="controls">
+  <label>
+    <i class="fas fa-circle-notch" style="margin-right: 0.25rem; color: var(--color-text-hyperlink);"></i>
     {{localize "TOKEN-FRAMER.Config.Title"}}
   </label>
-</div>
-
-<div class="form-group" data-token-framer="enable">
-  <label>{{localize "TOKEN-FRAMER.Config.Enable"}}</label>
-  <input type="checkbox" name="flags.{{moduleId}}.frameData.enabled" {{frameEnabled}}>
-  <p class="hint">{{localize "TOKEN-FRAMER.Config.EnableHint"}}</p>
-</div>
-
-<div class="form-group" data-token-framer="previewBgRow" data-tfl-dependent="true">
-  <div class="tfl-preview-bg-row">
-    <div class="tfl-preview-column" data-token-framer="preview">
-  <label>{{localize "TOKEN-FRAMER.Config.Preview"}}</label>
-  <div class="tfl-preview-wrapper">
-    <div class="tfl-preview-placeholder">
-      <i class="fas fa-image"></i>
-      <span>{{localize "TOKEN-FRAMER.Config.PreviewPlaceholder"}}</span>
-    </div>
-    <div class="tfl-preview-loading">
-      <i class="fas fa-spinner fa-spin"></i>
-    </div>
-    <img class="tfl-preview-image" src="" alt="{{localize 'TOKEN-FRAMER.Config.Preview'}}">
-  </div>
-    <button type="button" class="tfl-refresh-base-button" title="{{localize 'TOKEN-FRAMER.Config.RefreshHint'}}">
-      <i class="fas fa-sync-alt"></i>
-      {{localize "TOKEN-FRAMER.Config.Refresh"}}
-    </button>
-    </div>
-    
-    <div class="tfl-bg-column">
-      <div class="tfl-subheader" data-token-framer="bgHeader">
-        <label><strong>{{localize "TOKEN-FRAMER.Config.Background"}}</strong></label>
-      </div>
-      
-      <div class="tfl-compact-field" data-token-framer="bgEnabled">
-        <label>{{localize "TOKEN-FRAMER.Config.BackgroundEnable"}}</label>
-        <input type="checkbox" name="flags.{{moduleId}}.frameData.bgEnabled" {{bgEnabled}}>
-      </div>
-      
-      <div class="tfl-compact-field" data-token-framer="bgColor">
-        <label>{{localize "TOKEN-FRAMER.Config.BackgroundColor"}}</label>
-        <div class="tfl-color-row">
-          <input type="color" name="flags.{{moduleId}}.frameData.bgColor" value="{{bgColor}}" class="tfl-color-picker">
-          <input type="text" name="flags.{{moduleId}}.frameData.bgColorText" value="{{bgColor}}" class="tfl-color-text" placeholder="#000000">
-        </div>
-      </div>
-      
-      <p class="tfl-compact-hint">{{localize "TOKEN-FRAMER.Config.BackgroundHint"}}</p>
-    </div>
-  </div>
-</div>
-
-<div class="form-group" data-token-framer="originalImage" data-tfl-dependent="true">
-  <label>{{localize "TOKEN-FRAMER.Config.BaseImage"}}</label>
-  <div class="form-fields">
-    <input type="text" class="tfl-original-path" name="flags.{{moduleId}}.originalImage" value="{{originalImage}}" placeholder="path/to/base-image.webp">
-    <button type="button" class="tfl-original-file-picker" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
-      <i class="fas fa-file-import"></i>
+  <div class="form-fields tfl-controls-row">
+    <input type="checkbox" 
+           name="flags.{{moduleId}}.frameData.enabled" 
+           class="tfl-enable-checkbox"
+           {{frameEnabled}}
+           title="{{localize 'TOKEN-FRAMER.Config.EnableHint'}}">
+    <span class="tfl-enable-label">{{localize "TOKEN-FRAMER.Config.Enable"}}</span>
+    <button type="button" class="tfl-configure-button">
+      <i class="fas fa-cog"></i>
+      {{localize "TOKEN-FRAMER.Config.ConfigureFrame"}}
     </button>
   </div>
-  <p class="hint">{{localize "TOKEN-FRAMER.Config.BaseImageInputHint"}}</p>
-</div>
-
-<div class="form-group" data-token-framer="frameImage" data-tfl-dependent="true">
-  <label>{{localize "TOKEN-FRAMER.Config.FrameImage"}}</label>
-  <div class="form-fields">
-    <input type="text" name="flags.{{moduleId}}.frameData.frameImage" value="{{frameImage}}" placeholder="path/to/frame.webp">
-    <button type="button" class="tfl-file-picker" data-target="flags.{{moduleId}}.frameData.frameImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
-      <i class="fas fa-file-import"></i>
-    </button>
-  </div>
-  <p class="hint">{{localize "TOKEN-FRAMER.Config.FrameImageHint"}}</p>
-</div>
-
-<div class="form-group" data-token-framer="maskImage" data-tfl-dependent="true">
-  <label>{{localize "TOKEN-FRAMER.Config.MaskImage"}}</label>
-  <div class="form-fields">
-    <input type="text" name="flags.{{moduleId}}.frameData.maskImage" value="{{maskImage}}" placeholder="{{localize 'TOKEN-FRAMER.Config.AutoCircular'}}">
-    <button type="button" class="tfl-file-picker" data-target="flags.{{moduleId}}.frameData.maskImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
-      <i class="fas fa-file-import"></i>
-    </button>
-  </div>
-  <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskImageHint"}}</p>
-</div>
-
-<div class="tfl-subheader" data-token-framer="baseHeader" data-tfl-dependent="true">
-  <label><strong>{{localize "TOKEN-FRAMER.Config.BaseImageSettings"}}</strong></label>
-</div>
-
-<div class="form-group" data-token-framer="baseScale" data-tfl-dependent="true">
-  <label>{{localize "TOKEN-FRAMER.Config.BaseScale"}}</label>
-  <div class="form-fields">
-    <input type="range" name="flags.{{moduleId}}.frameData.baseScale" value="{{baseScale}}" min="0.5" max="1.0" step="0.01">
-    <span class="range-value" data-for="flags.{{moduleId}}.frameData.baseScale">{{baseScale}}</span>
-  </div>
-  <p class="hint">{{localize "TOKEN-FRAMER.Config.BaseScaleHint"}}</p>
-</div>
-
-<div class="form-group" data-token-framer="baseOffset" data-tfl-dependent="true">
-  <label>{{localize "TOKEN-FRAMER.Config.BaseOffset"}}</label>
-  <div class="form-fields">
-    <label class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</label>
-    <input type="number" name="flags.{{moduleId}}.frameData.baseOffsetX" value="{{baseOffsetX}}" step="1" placeholder="0">
-    <label class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</label>
-    <input type="number" name="flags.{{moduleId}}.frameData.baseOffsetY" value="{{baseOffsetY}}" step="1" placeholder="0">
-  </div>
-  <p class="hint">{{localize "TOKEN-FRAMER.Config.BaseOffsetHint"}}</p>
-</div>
-
-<div class="tfl-subheader" data-token-framer="maskHeader" data-tfl-dependent="true">
-  <label><strong>{{localize "TOKEN-FRAMER.Config.MaskSettings"}}</strong></label>
-</div>
-
-<div class="form-group" data-token-framer="maskRadius" data-tfl-dependent="true">
-  <label>{{localize "TOKEN-FRAMER.Config.MaskRadius"}}</label>
-  <div class="form-fields">
-    <input type="range" name="flags.{{moduleId}}.frameData.maskRadius" value="{{maskRadius}}" min="0.5" max="1.0" step="0.01">
-    <span class="range-value" data-for="flags.{{moduleId}}.frameData.maskRadius">{{maskRadius}}</span>
-  </div>
-  <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskRadiusHint"}}</p>
-</div>
-
-<div class="form-group" data-token-framer="maskScale" data-tfl-dependent="true">
-  <label>{{localize "TOKEN-FRAMER.Config.MaskScale"}}</label>
-  <div class="form-fields">
-    <input type="range" name="flags.{{moduleId}}.frameData.maskScale" value="{{maskScale}}" min="0.5" max="1.5" step="0.01">
-    <span class="range-value" data-for="flags.{{moduleId}}.frameData.maskScale">{{maskScale}}</span>
-  </div>
-  <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskScaleHint"}}</p>
-</div>
-
-<div class="form-group" data-token-framer="maskOffset" data-tfl-dependent="true">
-  <label>{{localize "TOKEN-FRAMER.Config.MaskOffset"}}</label>
-  <div class="form-fields">
-    <label class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</label>
-    <input type="number" name="flags.{{moduleId}}.frameData.maskOffsetX" value="{{maskOffsetX}}" step="1" placeholder="0">
-    <label class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</label>
-    <input type="number" name="flags.{{moduleId}}.frameData.maskOffsetY" value="{{maskOffsetY}}" step="1" placeholder="0">
-  </div>
-  <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskOffsetHint"}}</p>
-</div>
-
-<div class="tfl-subheader" data-token-framer="frameHeader" data-tfl-dependent="true">
-  <label><strong>{{localize "TOKEN-FRAMER.Config.FrameSettings"}}</strong></label>
-</div>
-
-<div class="form-group" data-token-framer="frameScale" data-tfl-dependent="true">
-  <label>{{localize "TOKEN-FRAMER.Config.FrameScale"}}</label>
-  <div class="form-fields">
-    <input type="range" name="flags.{{moduleId}}.frameData.frameScale" value="{{frameScale}}" min="0.5" max="1.5" step="0.01">
-    <span class="range-value" data-for="flags.{{moduleId}}.frameData.frameScale">{{frameScale}}</span>
-  </div>
-  <p class="hint">{{localize "TOKEN-FRAMER.Config.FrameScaleHint"}}</p>
-</div>
-
-<div class="form-group" data-token-framer="frameOffset" data-tfl-dependent="true">
-  <label>{{localize "TOKEN-FRAMER.Config.FrameOffset"}}</label>
-  <div class="form-fields">
-    <label class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</label>
-    <input type="number" name="flags.{{moduleId}}.frameData.frameOffsetX" value="{{frameOffsetX}}" step="1" placeholder="0">
-    <label class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</label>
-    <input type="number" name="flags.{{moduleId}}.frameData.frameOffsetY" value="{{frameOffsetY}}" step="1" placeholder="0">
-  </div>
-  <p class="hint">{{localize "TOKEN-FRAMER.Config.FrameOffsetHint"}}</p>
-</div>
-
-<div class="tfl-actions-section" data-token-framer="actions" data-tfl-dependent="true">
-  <p class="hint" style="text-align: center; margin-bottom: 5px;">{{localize "TOKEN-FRAMER.Config.PrototypeWarning"}}</p>
-  <div style="display: flex; gap: 5px;">
-    <button type="button" class="tfl-restore-button">
-      <i class="fas fa-undo"></i>
-      {{localize "TOKEN-FRAMER.Config.RestoreOriginal"}}
-    </button>
-    <button type="button" class="tfl-preview-button">
-      <i class="fas fa-sync"></i>
-      {{localize "TOKEN-FRAMER.Config.ApplyFrame"}}
-    </button>
-  </div>
+  <p class="hint">{{localize "TOKEN-FRAMER.Config.ControlsHint"}}</p>
 </div>
