@@ -45,7 +45,10 @@ export function registerTokenConfigHooks() {
 function getDefaultSettings() {
   return {
     baseScale: game.settings.get(MODULE_ID, 'defaultBaseScale') ?? 0.9,
-    maskRadius: game.settings.get(MODULE_ID, 'defaultMaskRadius') ?? 0.95,
+    frameScale: game.settings.get(MODULE_ID, 'defaultFrameScale') ?? 1.0,
+    maskScale: game.settings.get(MODULE_ID, 'defaultMaskScale') ?? 0.95,
+    overlayScale: game.settings.get(MODULE_ID, 'defaultOverlayScale') ?? 1.0,
+    bgImageScale: game.settings.get(MODULE_ID, 'defaultBgImageScale') ?? 1.0,
     defaultFrameImage: game.settings.get(MODULE_ID, 'defaultFrameImage') ?? 'modules/token-framer/assets/default.webp'
   };
 }
@@ -64,6 +67,61 @@ function loadImage(src) {
 }
 
 /**
+ * Draw a hexagon path (flat-top orientation)
+ */
+function drawHexagonPath(ctx, centerX, centerY, radius) {
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 3) * i;
+    const x = centerX + radius * Math.cos(angle);
+    const y = centerY + radius * Math.sin(angle);
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  ctx.closePath();
+}
+
+/**
+ * Apply mask shape to context (none, circle, square, or hexagon)
+ * Returns false if no clipping should be applied (shape = 'none')
+ */
+function applyMaskShape(ctx, shape, centerX, centerY, radius, offsetX = 0, offsetY = 0) {
+  // 'none' means no masking
+  if (shape === 'none') {
+    return false;
+  }
+  
+  ctx.beginPath();
+  
+  switch (shape) {
+    case 'square':
+      const squareSize = radius * 2;
+      ctx.rect(
+        centerX - radius + offsetX,
+        centerY - radius + offsetY,
+        squareSize,
+        squareSize
+      );
+      break;
+    
+    case 'hexagon':
+      drawHexagonPath(ctx, centerX + offsetX, centerY + offsetY, radius);
+      break;
+    
+    case 'circle':
+    default:
+      ctx.arc(centerX + offsetX, centerY + offsetY, radius, 0, Math.PI * 2);
+      break;
+  }
+  
+  ctx.clip();
+  return true;
+}
+
+/**
  * Generate a preview image using Canvas compositing
  */
 async function generatePreview(baseImagePath, frameData, size = 200) {
@@ -77,11 +135,21 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
     maskScale = 1.0,
     maskOffsetX = 0,
     maskOffsetY = 0,
+    maskShape = 'circle',
     frameScale = 1.0,
     frameOffsetX = 0,
     frameOffsetY = 0,
+    baseOverFrame = false,
     bgEnabled = false,
-    bgColor = '#000000'
+    bgColor = '#000000',
+    bgImage = '',
+    bgImageScale = 1.0,
+    bgImageOffsetX = 0,
+    bgImageOffsetY = 0,
+    overlayImage = '',
+    overlayScale = 1.0,
+    overlayOffsetX = 0,
+    overlayOffsetY = 0
   } = frameData;
 
   if (!baseImagePath || !frameImage) {
@@ -97,10 +165,12 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
   const centerY = size / 2;
 
   try {
-    const [baseImg, frameImg, maskImg] = await Promise.all([
+    const [baseImg, frameImg, maskImg, bgImg, overlayImg] = await Promise.all([
       loadImage(baseImagePath),
       loadImage(frameImage),
-      maskImage ? loadImage(maskImage).catch(() => null) : null
+      maskImage ? loadImage(maskImage).catch(() => null) : null,
+      bgImage ? loadImage(bgImage).catch(() => null) : null,
+      overlayImage ? loadImage(overlayImage).catch(() => null) : null
     ]);
 
     const baseAspect = baseImg.width / baseImg.height;
@@ -126,72 +196,125 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
     }
     
     const baseDrawX = centerX - baseDrawWidth / 2 + scaledBaseOffsetX;
-
-    ctx.save();
     
-    if (maskImg) {
-      const baseCanvas = document.createElement('canvas');
-      baseCanvas.width = size;
-      baseCanvas.height = size;
-      const baseCtx = baseCanvas.getContext('2d');
-      
+    // Scale background image offsets
+    const scaledBgImageOffsetX = bgImageOffsetX * offsetScale;
+    const scaledBgImageOffsetY = bgImageOffsetY * offsetScale;
+
+    // Helper function to draw background (color and/or image)
+    const drawBackground = (targetCtx) => {
       if (bgEnabled && bgColor) {
-        baseCtx.fillStyle = bgColor;
-        baseCtx.fillRect(0, 0, size, size);
+        targetCtx.fillStyle = bgColor;
+        targetCtx.fillRect(0, 0, size, size);
       }
       
-      baseCtx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+      if (bgImg) {
+        const bgDrawSize = size * bgImageScale;
+        targetCtx.drawImage(
+          bgImg,
+          centerX - bgDrawSize / 2 + scaledBgImageOffsetX,
+          centerY - bgDrawSize / 2 + scaledBgImageOffsetY,
+          bgDrawSize,
+          bgDrawSize
+        );
+      }
+    };
+
+    // Helper function to draw the masked base image
+    const drawMaskedBase = () => {
+      ctx.save();
       
-      const maskCanvas = document.createElement('canvas');
-      maskCanvas.width = size;
-      maskCanvas.height = size;
-      const maskCtx = maskCanvas.getContext('2d');
-      
-      const maskDrawSize = size * maskScale;
-      maskCtx.drawImage(
-        maskImg,
-        centerX - maskDrawSize / 2 + scaledMaskOffsetX,
-        centerY - maskDrawSize / 2 + scaledMaskOffsetY,
-        maskDrawSize,
-        maskDrawSize
+      if (maskImg) {
+        // Custom mask image - ignore maskShape
+        const baseCanvas = document.createElement('canvas');
+        baseCanvas.width = size;
+        baseCanvas.height = size;
+        const baseCtx = baseCanvas.getContext('2d');
+        
+        drawBackground(baseCtx);
+        baseCtx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+        
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = size;
+        maskCanvas.height = size;
+        const maskCtx = maskCanvas.getContext('2d');
+        
+        const maskDrawSize = size * maskScale;
+        maskCtx.drawImage(
+          maskImg,
+          centerX - maskDrawSize / 2 + scaledMaskOffsetX,
+          centerY - maskDrawSize / 2 + scaledMaskOffsetY,
+          maskDrawSize,
+          maskDrawSize
+        );
+        
+        const maskData = maskCtx.getImageData(0, 0, size, size);
+        const pixels = maskData.data;
+        for (let i = 0; i < pixels.length; i += 4) {
+          const luminosity = (pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114);
+          pixels[i + 3] = Math.min(pixels[i + 3], luminosity);
+        }
+        maskCtx.putImageData(maskData, 0, 0);
+        
+        baseCtx.globalCompositeOperation = 'destination-in';
+        baseCtx.drawImage(maskCanvas, 0, 0);
+        ctx.drawImage(baseCanvas, 0, 0);
+        
+      } else {
+        // Use mask shape (circle, square, hexagon)
+        const radius = (size / 2) * maskRadius;
+        applyMaskShape(ctx, maskShape, centerX, centerY, radius, scaledMaskOffsetX, scaledMaskOffsetY);
+        
+        drawBackground(ctx);
+        ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+      }
+
+      ctx.restore();
+    };
+
+    // Helper function to draw the frame
+    const drawFrame = () => {
+      const frameSize = size * frameScale;
+      ctx.drawImage(
+        frameImg,
+        centerX - frameSize / 2 + scaledFrameOffsetX,
+        centerY - frameSize / 2 + scaledFrameOffsetY,
+        frameSize,
+        frameSize
       );
-      
-      const maskData = maskCtx.getImageData(0, 0, size, size);
-      const pixels = maskData.data;
-      for (let i = 0; i < pixels.length; i += 4) {
-        const luminosity = (pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114);
-        pixels[i + 3] = Math.min(pixels[i + 3], luminosity);
+    };
+
+    // Scale overlay offsets
+    const scaledOverlayOffsetX = overlayOffsetX * offsetScale;
+    const scaledOverlayOffsetY = overlayOffsetY * offsetScale;
+
+    // Helper function to draw the overlay (always on top)
+    const drawOverlay = () => {
+      if (overlayImg) {
+        const overlaySize = size * overlayScale;
+        ctx.drawImage(
+          overlayImg,
+          centerX - overlaySize / 2 + scaledOverlayOffsetX,
+          centerY - overlaySize / 2 + scaledOverlayOffsetY,
+          overlaySize,
+          overlaySize
+        );
       }
-      maskCtx.putImageData(maskData, 0, 0);
-      
-      baseCtx.globalCompositeOperation = 'destination-in';
-      baseCtx.drawImage(maskCanvas, 0, 0);
-      ctx.drawImage(baseCanvas, 0, 0);
-      
+    };
+
+    // Draw in order based on baseOverFrame setting
+    if (baseOverFrame) {
+      // Frame first, then base on top
+      drawFrame();
+      drawMaskedBase();
     } else {
-      ctx.beginPath();
-      const radius = (size / 2) * maskRadius;
-      ctx.arc(centerX + scaledMaskOffsetX, centerY + scaledMaskOffsetY, radius, 0, Math.PI * 2);
-      ctx.clip();
-      
-      if (bgEnabled && bgColor) {
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, size, size);
-      }
-      
-      ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+      // Base first, then frame on top (default)
+      drawMaskedBase();
+      drawFrame();
     }
-
-    ctx.restore();
-
-    const frameSize = size * frameScale;
-    ctx.drawImage(
-      frameImg,
-      centerX - frameSize / 2 + scaledFrameOffsetX,
-      centerY - frameSize / 2 + scaledFrameOffsetY,
-      frameSize,
-      frameSize
-    );
+    
+    // Overlay is always on top of everything
+    drawOverlay();
 
     return canvas.toDataURL('image/png');
   } catch (err) {
@@ -240,7 +363,7 @@ class TokenFramerDialog extends FormApplication {
       classes: ['token-framer-dialog-app', 'standard-form'],
       template: `modules/${MODULE_ID}/templates/frame-dialog.hbs`,
       width: 1050,
-      height: 855,
+      height: 800,
       title: game.i18n.localize('TOKEN-FRAMER.Config.DialogTitle'),
       resizable: true
     });
@@ -268,15 +391,24 @@ class TokenFramerDialog extends FormApplication {
       baseScale: frameData.baseScale ?? defaults.baseScale,
       baseOffsetX: frameData.baseOffsetX ?? 0,
       baseOffsetY: frameData.baseOffsetY ?? 0,
-      maskRadius: frameData.maskRadius ?? defaults.maskRadius,
-      maskScale: frameData.maskScale ?? 1.0,
+      maskSize: frameData.maskImage ? (frameData.maskScale ?? defaults.maskScale) : (frameData.maskRadius ?? defaults.maskScale),
       maskOffsetX: frameData.maskOffsetX ?? 0,
       maskOffsetY: frameData.maskOffsetY ?? 0,
-      frameScale: frameData.frameScale ?? 1.0,
+      maskShape: frameData.maskShape ?? 'circle',
+      frameScale: frameData.frameScale ?? defaults.frameScale,
       frameOffsetX: frameData.frameOffsetX ?? 0,
       frameOffsetY: frameData.frameOffsetY ?? 0,
+      baseOverFrame: frameData.baseOverFrame ? 'checked' : '',
       bgEnabled: frameData.bgEnabled ? 'checked' : '',
-      bgColor: frameData.bgColor ?? '#000000'
+      bgColor: frameData.bgColor ?? '#000000',
+      bgImage: frameData.bgImage ?? '',
+      bgImageScale: frameData.bgImageScale ?? defaults.bgImageScale,
+      bgImageOffsetX: frameData.bgImageOffsetX ?? 0,
+      bgImageOffsetY: frameData.bgImageOffsetY ?? 0,
+      overlayImage: frameData.overlayImage ?? '',
+      overlayScale: frameData.overlayScale ?? defaults.overlayScale,
+      overlayOffsetX: frameData.overlayOffsetX ?? 0,
+      overlayOffsetY: frameData.overlayOffsetY ?? 0
     };
   }
 
@@ -337,15 +469,59 @@ class TokenFramerDialog extends FormApplication {
       });
     }
 
-    // Range slider value display and preview update
-    rootEl.querySelectorAll('input[type="range"]').forEach(input => {
-      const valueDisplay = rootEl.querySelector(`.range-value[data-for="${input.name}"]`);
-      input.addEventListener('input', () => {
-        if (valueDisplay) {
-          valueDisplay.textContent = parseFloat(input.value).toFixed(2);
+    // Save Image button - export composited image to file
+    const saveImageButton = rootEl.querySelector('.tfl-save-image-button');
+    if (saveImageButton) {
+      saveImageButton.addEventListener('click', async () => {
+        await this._saveImageToFile(rootEl);
+      });
+    }
+
+    // Range slider and number input two-way sync with preview update
+    rootEl.querySelectorAll('input[type="range"]').forEach(rangeInput => {
+      const numberInput = rootEl.querySelector(`input.range-value[data-for="${rangeInput.name}"]`);
+      
+      // Range slider changes -> update number input
+      rangeInput.addEventListener('input', () => {
+        if (numberInput) {
+          numberInput.value = parseFloat(rangeInput.value).toFixed(2);
         }
         this._debouncedPreviewUpdate(rootEl);
       });
+      
+      if (numberInput) {
+        // Number input changes -> update range slider
+        numberInput.addEventListener('input', () => {
+          const val = parseFloat(numberInput.value);
+          if (!isNaN(val)) {
+            // Clamp to range slider bounds
+            const min = parseFloat(rangeInput.min);
+            const max = parseFloat(rangeInput.max);
+            rangeInput.value = Math.min(max, Math.max(min, val));
+          }
+          this._debouncedPreviewUpdate(rootEl);
+        });
+        
+        // Mouse wheel scrolling on number input
+        numberInput.addEventListener('wheel', (e) => {
+          e.preventDefault();
+          const step = parseFloat(rangeInput.step) || 0.01;
+          const min = parseFloat(rangeInput.min);
+          const max = parseFloat(rangeInput.max);
+          let currentVal = parseFloat(numberInput.value) || 0;
+          
+          // Scroll up = increase, scroll down = decrease
+          if (e.deltaY < 0) {
+            currentVal = Math.min(max, currentVal + step);
+          } else {
+            currentVal = Math.max(min, currentVal - step);
+          }
+          
+          numberInput.value = currentVal.toFixed(2);
+          rangeInput.value = currentVal;
+          this._debouncedPreviewUpdate(rootEl);
+        });
+      }
     });
 
     // Number inputs
@@ -393,13 +569,30 @@ class TokenFramerDialog extends FormApplication {
       });
     }
 
-    // Background enable checkbox
-    const bgEnabledCheckbox = rootEl.querySelector('input[name="bgEnabled"]');
-    if (bgEnabledCheckbox) {
-      bgEnabledCheckbox.addEventListener('change', () => {
+    // Checkbox inputs that affect preview
+    rootEl.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
         this._debouncedPreviewUpdate(rootEl);
       });
-    }
+    });
+
+    // Select dropdowns (mask shape, etc.)
+    rootEl.querySelectorAll('select').forEach(select => {
+      select.addEventListener('change', () => {
+        this._debouncedPreviewUpdate(rootEl);
+      });
+    });
+
+    // Collapsible sections
+    rootEl.querySelectorAll('.tfl-collapsible-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const collapsible = header.closest('.tfl-collapsible');
+        if (collapsible) {
+          const isCollapsed = collapsible.dataset.collapsed === 'true';
+          collapsible.dataset.collapsed = isCollapsed ? 'false' : 'true';
+        }
+      });
+    });
 
     // Apply Frame button
     const applyButton = rootEl.querySelector('.tfl-apply-button');
@@ -449,6 +642,7 @@ class TokenFramerDialog extends FormApplication {
    */
   _gatherFormData(rootEl) {
     const getValue = (name) => rootEl.querySelector(`input[name="${name}"]`)?.value ?? '';
+    const getSelectValue = (name) => rootEl.querySelector(`select[name="${name}"]`)?.value ?? '';
     const getChecked = (name) => rootEl.querySelector(`input[name="${name}"]`)?.checked ?? false;
     const getNumber = (name, fallback) => parseFloat(getValue(name)) || fallback;
     const getInt = (name, fallback) => parseInt(getValue(name)) || fallback;
@@ -460,15 +654,25 @@ class TokenFramerDialog extends FormApplication {
       baseScale: getNumber('baseScale', 0.9),
       baseOffsetX: getInt('baseOffsetX', 0),
       baseOffsetY: getInt('baseOffsetY', 0),
-      maskRadius: getNumber('maskRadius', 0.95),
-      maskScale: getNumber('maskScale', 1.0),
+      maskRadius: getNumber('maskSize', 0.95),
+      maskScale: getNumber('maskSize', 1.0),
       maskOffsetX: getInt('maskOffsetX', 0),
       maskOffsetY: getInt('maskOffsetY', 0),
+      maskShape: getSelectValue('maskShape') || 'circle',
       frameScale: getNumber('frameScale', 1.0),
       frameOffsetX: getInt('frameOffsetX', 0),
       frameOffsetY: getInt('frameOffsetY', 0),
+      baseOverFrame: getChecked('baseOverFrame'),
       bgEnabled: getChecked('bgEnabled'),
-      bgColor: getValue('bgColor') || '#000000'
+      bgColor: getValue('bgColor') || '#000000',
+      bgImage: getValue('bgImage'),
+      bgImageScale: getNumber('bgImageScale', 1.0),
+      bgImageOffsetX: getInt('bgImageOffsetX', 0),
+      bgImageOffsetY: getInt('bgImageOffsetY', 0),
+      overlayImage: getValue('overlayImage'),
+      overlayScale: getNumber('overlayScale', 1.0),
+      overlayOffsetX: getInt('overlayOffsetX', 0),
+      overlayOffsetY: getInt('overlayOffsetY', 0)
     };
   }
 
@@ -525,6 +729,98 @@ class TokenFramerDialog extends FormApplication {
     previewDebounceTimer = setTimeout(() => {
       this._updatePreview(rootEl);
     }, PREVIEW_DEBOUNCE_MS);
+  }
+
+  /**
+   * Save the composited image to a user-selected location
+   */
+  async _saveImageToFile(rootEl) {
+    const frameData = this._gatherFormData(rootEl);
+    
+    if (!this.baseImagePath) {
+      ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.NoBaseImage'));
+      return;
+    }
+    
+    if (!frameData.frameImage) {
+      ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.NoFrameImage'));
+      return;
+    }
+
+    // Generate high-quality image using the cache resolution setting
+    const cacheResolution = game.settings.get(MODULE_ID, 'cacheResolution') ?? 1000;
+    const cacheQuality = game.settings.get(MODULE_ID, 'cacheQuality') ?? 0.95;
+    
+    try {
+      // Generate the composited image as a data URL at high resolution
+      const dataUrl = await generatePreview(this.baseImagePath, frameData, cacheResolution);
+      
+      if (!dataUrl) {
+        ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.SaveImageFailed'));
+        return;
+      }
+
+      // Convert data URL to blob
+      const response = await fetch(dataUrl);
+      const pngBlob = await response.blob();
+      
+      // Convert PNG to WebP for better compression
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+      
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      
+      const webpBlob = await new Promise(resolve => {
+        canvas.toBlob(resolve, 'image/webp', cacheQuality);
+      });
+
+      // Generate a default filename
+      const baseFilename = this.baseImagePath.split('/').pop().replace(/\.[^.]+$/, '');
+      const defaultFilename = `${baseFilename}_token.webp`;
+
+      // Open FilePicker to let user choose save location
+      new foundry.applications.apps.FilePicker.implementation({
+        type: 'folder',
+        callback: async (folderPath) => {
+          if (!folderPath) return;
+          
+          // Create the file and upload
+          const file = new File([webpBlob], defaultFilename, { type: 'image/webp' });
+          
+          try {
+            const uploadResult = await foundry.applications.apps.FilePicker.implementation.upload(
+              'data',
+              folderPath,
+              file,
+              { notify: false }
+            );
+            
+            if (uploadResult?.path) {
+              ui.notifications.info(game.i18n.format('TOKEN-FRAMER.Notifications.ImageSaved', { path: uploadResult.path }));
+              debugLog('Image saved to:', uploadResult.path);
+            } else {
+              ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.SaveImageFailed'));
+            }
+          } catch (uploadErr) {
+            console.error(`${MODULE_ID} | Failed to upload image:`, uploadErr);
+            ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.SaveImageFailed'));
+          }
+        }
+      }).render(true);
+      
+    } catch (err) {
+      console.error(`${MODULE_ID} | Failed to save image:`, err);
+      ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.SaveImageFailed'));
+    }
   }
 
   /**
@@ -751,7 +1047,10 @@ function activateControlListeners(controlsEl, app, token) {
             enabled: true,
             frameImage: currentFrameData.frameImage || defaults.defaultFrameImage,
             baseScale: currentFrameData.baseScale ?? defaults.baseScale,
-            maskRadius: currentFrameData.maskRadius ?? defaults.maskRadius
+            frameScale: currentFrameData.frameScale ?? defaults.frameScale,
+            maskRadius: currentFrameData.maskRadius ?? defaults.maskScale,
+            overlayScale: currentFrameData.overlayScale ?? defaults.overlayScale,
+            bgImageScale: currentFrameData.bgImageScale ?? defaults.bgImageScale
           };
           await placedToken.document.setFlag(MODULE_ID, 'frameData', newFrameData);
         } else {

@@ -8,7 +8,9 @@
       "FrameRemoved": "Token frame removed. Original image restored.",
       "FrameWillBeRemoved": "Frame will be removed. Click 'Update Token' to save changes.",
       "NoBaseImage": "Please set a base image first.",
-      "NoFrameImage": "Please set a frame image first."
+      "NoFrameImage": "Please set a frame image first.",
+      "ImageSaved": "Image saved to: {path}",
+      "SaveImageFailed": "Failed to save image. Check console for details."
     },
     "Settings": {
       "Regenerate": {
@@ -16,7 +18,7 @@
         "Label": "Regenerate Cache",
         "Hint": "Regenerate the token frame cache for all actors and tokens in the loaded world."
       },
-	  "DefaultFrameImage": {
+      "DefaultFrameImage": {
         "Name": "Default Frame Image",
         "Hint": "The default frame image path to use when enabling frames for the first time."
       },
@@ -36,13 +38,25 @@
         "Name": "Cache Image Quality",
         "Hint": "WebP quality for cached images (0.5 = 50%, 1.0 = 100%). Higher quality means larger file sizes."
       },
-      "DefaultMaskRadius": {
-        "Name": "Default Mask Radius",
-        "Hint": "Default radius for auto-generated circular masks (0.5 to 1.0)."
-      },
       "DefaultBaseScale": {
         "Name": "Default Base Scale",
-        "Hint": "Default scale for the base token image when a frame is applied (0.5 to 1.0)."
+        "Hint": "Default scale for the base token image when a frame is applied (0.5 to 1.5)."
+      },
+      "DefaultFrameScale": {
+        "Name": "Default Frame Scale",
+        "Hint": "Default scale for the frame overlay image (0.5 to 1.5)."
+      },
+      "DefaultMaskScale": {
+        "Name": "Default Mask Scale",
+        "Hint": "Default scale for the mask shape (0.5 to 1.5)."
+      },
+      "DefaultOverlayScale": {
+        "Name": "Default Overlay Scale",
+        "Hint": "Default scale for the overlay/decoration image (0.5 to 1.5)."
+      },
+      "DefaultBgImageScale": {
+        "Name": "Default Background Image Scale",
+        "Hint": "Default scale for the background image (0.5 to 1.5)."
       }
     },
     "Config": {
@@ -53,15 +67,23 @@
       "ConfigureFrame": "Configure",
       "ControlsHint": "Enable to auto-apply frames to this token. Click Configure to customize frame settings.",
       "Background": "Background",
-      "BackgroundEnable": "Enable",
+      "BackgroundEnable": "Enable Color",
       "BackgroundColor": "Color",
       "BackgroundHint": "Use color picker on the preview to sample colors.",
+      "BackgroundImage": "Background Image",
+      "BackgroundImagePlaceholder": "Optional background image",
+      "BackgroundImageScale": "Background Scale",
+      "BackgroundImageOffset": "Background Offset",
+      "Overlay": "Overlay / Decoration",
+      "OverlayImage": "Overlay Image",
+      "OverlayImagePlaceholder": "Optional overlay image",
+      "OverlayHint": "Image drawn on top of everything. Use for decorations, badges, or a second frame.",
+      "OverlayScale": "Overlay Scale",
+      "OverlayOffset": "Overlay Offset",
       "BaseImage": "Base Image",
       "BaseImageInputHint": "The token image before framing. Use the button below the preview to sync from Image Path.",
       "FrameImage": "Frame Image",
       "FrameImageHint": "Path to the frame overlay image (PNG, WEBP recommended).",
-      "MaskImage": "Mask Image (Optional)",
-      "MaskImageHint": "Custom mask image. White areas are visible. Leave empty for circular mask.",
       "AutoCircular": "Auto (circular)",
       "BrowseFiles": "Browse Files",
       "Clear": "Clear",
@@ -71,10 +93,17 @@
       "BaseOffset": "Base Offset",
       "BaseOffsetHint": "Pixel offset for the base image position (X and Y).",
       "MaskSettings": "Mask Settings",
-      "MaskRadius": "Mask Radius",
-      "MaskRadiusHint": "Radius of the circular mask (when no custom mask image is set).",
+      "MaskShape": "Mask Shape",
+      "MaskShapeHint": "Shape of the mask. Overridden if a custom mask image is set.",
+      "MaskShapeNone": "None (no mask)",
+      "MaskShapeCircle": "Circle",
+      "MaskShapeSquare": "Square",
+      "MaskShapeHexagon": "Hexagon",
+      "MaskImage": "Custom Mask Image",
+      "MaskImagePlaceholder": "Optional custom mask",
+      "MaskImageHint": "Custom mask image overrides the shape above. White = visible, black = hidden.",
       "MaskScale": "Mask Scale",
-      "MaskScaleHint": "Scale factor for custom mask image.",
+      "MaskScaleHint": "Scale of the mask shape or custom mask image.",
       "MaskOffset": "Mask Offset",
       "MaskOffsetHint": "Pixel offset for the mask position (X and Y).",
       "FrameSettings": "Frame Settings",
@@ -82,13 +111,17 @@
       "FrameScaleHint": "Scale factor for the frame overlay image.",
       "FrameOffset": "Frame Offset",
       "FrameOffsetHint": "Pixel offset for the frame position (X and Y).",
+      "BaseOverFrame": "Base Image Over Frame",
+      "BaseOverFrameHint": "Draw the base image on top of the frame instead of behind it.",
       "LabelX": "X",
       "LabelY": "Y",
       "Preview": "Preview",
       "PreviewPlaceholder": "Select a frame image",
       "Refresh": "Refresh",
       "RefreshHint": "Sync base image from the token's Image Path field",
-      "RefreshFromToken": "Sync from Image Path",
+      "RefreshFromToken": "Sync Base Image from Image Path",
+      "SaveImage": "Save image as new file",
+      "SaveImageHint": "Save the composited image to a file on the server",
       "ApplyFrame": "Apply Frame",
       "RestoreOriginal": "Remove Frame",
       "PrototypeWarning": "If editing a Prototype Token for the first time, click Apply Frame."

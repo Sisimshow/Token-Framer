@@ -75,25 +75,70 @@ export function registerSettings() {
     type: Number,
     range: {
       min: 0.5,
-      max: 1.0,
+      max: 1.5,
       step: 0.05
     },
     default: 0.9
   });
 
-  // Default mask radius for auto-generated circular masks
-  game.settings.register(MODULE_ID, 'defaultMaskRadius', {
-    name: 'TOKEN-FRAMER.Settings.DefaultMaskRadius.Name',
-    hint: 'TOKEN-FRAMER.Settings.DefaultMaskRadius.Hint',
+  // Default frame scale
+  game.settings.register(MODULE_ID, 'defaultFrameScale', {
+    name: 'TOKEN-FRAMER.Settings.DefaultFrameScale.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultFrameScale.Hint',
     scope: 'world',
     config: true,
     type: Number,
     range: {
       min: 0.5,
-      max: 1.0,
+      max: 1.5,
+      step: 0.05
+    },
+    default: 1.0
+  });
+
+  // Default mask scale
+  game.settings.register(MODULE_ID, 'defaultMaskScale', {
+    name: 'TOKEN-FRAMER.Settings.DefaultMaskScale.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultMaskScale.Hint',
+    scope: 'world',
+    config: true,
+    type: Number,
+    range: {
+      min: 0.5,
+      max: 1.5,
       step: 0.05
     },
     default: 0.95
+  });
+
+  // Default overlay/decoration scale
+  game.settings.register(MODULE_ID, 'defaultOverlayScale', {
+    name: 'TOKEN-FRAMER.Settings.DefaultOverlayScale.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultOverlayScale.Hint',
+    scope: 'world',
+    config: true,
+    type: Number,
+    range: {
+      min: 0.5,
+      max: 1.5,
+      step: 0.05
+    },
+    default: 1.0
+  });
+
+  // Default background image scale
+  game.settings.register(MODULE_ID, 'defaultBgImageScale', {
+    name: 'TOKEN-FRAMER.Settings.DefaultBgImageScale.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultBgImageScale.Hint',
+    scope: 'world',
+    config: true,
+    type: Number,
+    range: {
+      min: 0.5,
+      max: 1.5,
+      step: 0.05
+    },
+    default: 1.0
   });
 
   // Debug mode setting

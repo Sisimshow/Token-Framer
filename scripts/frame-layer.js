@@ -73,13 +73,74 @@ function loadImage(src) {
 }
 
 /**
+ * Draw a hexagon path (flat-top orientation)
+ */
+function drawHexagonPath(ctx, centerX, centerY, radius) {
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    // Flat-top hexagon: start at 0 degrees (right side)
+    const angle = (Math.PI / 3) * i;
+    const x = centerX + radius * Math.cos(angle);
+    const y = centerY + radius * Math.sin(angle);
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  ctx.closePath();
+}
+
+/**
+ * Apply mask shape to context (none, circle, square, or hexagon)
+ * Returns false if no clipping should be applied (shape = 'none')
+ */
+function applyMaskShape(ctx, shape, centerX, centerY, radius, offsetX = 0, offsetY = 0) {
+  // 'none' means no masking - return false to indicate no clip was applied
+  if (shape === 'none') {
+    return false;
+  }
+  
+  ctx.beginPath();
+  
+  switch (shape) {
+    case 'square':
+      const squareSize = radius * 2;
+      ctx.rect(
+        centerX - radius + offsetX,
+        centerY - radius + offsetY,
+        squareSize,
+        squareSize
+      );
+      break;
+    
+    case 'hexagon':
+      drawHexagonPath(ctx, centerX + offsetX, centerY + offsetY, radius);
+      break;
+    
+    case 'circle':
+    default:
+      ctx.arc(centerX + offsetX, centerY + offsetY, radius, 0, Math.PI * 2);
+      break;
+  }
+  
+  ctx.clip();
+  return true;
+}
+
+/**
  * Composite the base image with frame and mask
  */
 async function compositeImage(baseImagePath, frameData, size = 1000, quality = 0.95) {
   const {
     frameImage, maskImage, baseScale = 0.9, baseOffsetX = 0, baseOffsetY = 0,
     maskRadius = 0.95, maskScale = 1.0, maskOffsetX = 0, maskOffsetY = 0,
-    frameScale = 1.0, frameOffsetX = 0, frameOffsetY = 0, bgEnabled = false, bgColor = '#000000'
+    maskShape = 'circle',
+    frameScale = 1.0, frameOffsetX = 0, frameOffsetY = 0,
+    baseOverFrame = false,
+    bgEnabled = false, bgColor = '#000000',
+    bgImage = '', bgImageScale = 1.0, bgImageOffsetX = 0, bgImageOffsetY = 0,
+    overlayImage = '', overlayScale = 1.0, overlayOffsetX = 0, overlayOffsetY = 0
   } = frameData;
 
   const canvas = document.createElement('canvas');
@@ -90,10 +151,12 @@ async function compositeImage(baseImagePath, frameData, size = 1000, quality = 0
   const centerX = size / 2;
   const centerY = size / 2;
 
-  const [baseImg, frameImg, maskImg] = await Promise.all([
+  const [baseImg, frameImg, maskImg, bgImg, overlayImg] = await Promise.all([
     loadImage(baseImagePath),
     loadImage(frameImage),
-    maskImage ? loadImage(maskImage) : null
+    maskImage ? loadImage(maskImage) : null,
+    bgImage ? loadImage(bgImage).catch(() => null) : null,
+    overlayImage ? loadImage(overlayImage).catch(() => null) : null
   ]);
 
   const baseAspect = baseImg.width / baseImg.height;
@@ -111,58 +174,103 @@ async function compositeImage(baseImagePath, frameData, size = 1000, quality = 0
   
   const baseDrawX = centerX - baseDrawWidth / 2 + baseOffsetX;
 
-  ctx.save();
-  
-  if (maskImg) {
-    const baseCanvas = document.createElement('canvas');
-    baseCanvas.width = size;
-    baseCanvas.height = size;
-    const baseCtx = baseCanvas.getContext('2d');
-    
+  // Helper function to draw background (color and/or image)
+  const drawBackground = (targetCtx) => {
     if (bgEnabled && bgColor) {
-      baseCtx.fillStyle = bgColor;
-      baseCtx.fillRect(0, 0, size, size);
+      targetCtx.fillStyle = bgColor;
+      targetCtx.fillRect(0, 0, size, size);
     }
     
-    baseCtx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
-    
-    const maskCanvas = document.createElement('canvas');
-    maskCanvas.width = size;
-    maskCanvas.height = size;
-    const maskCtx = maskCanvas.getContext('2d');
-    const maskDrawSize = size * maskScale;
-    
-    maskCtx.drawImage(maskImg, centerX - maskDrawSize / 2 + maskOffsetX, centerY - maskDrawSize / 2 + maskOffsetY, maskDrawSize, maskDrawSize);
-    
-    const maskData = maskCtx.getImageData(0, 0, size, size);
-    const pixels = maskData.data;
-    for (let i = 0; i < pixels.length; i += 4) {
-      const luminosity = (pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114);
-      pixels[i + 3] = Math.min(pixels[i + 3], luminosity);
+    if (bgImg) {
+      const bgDrawSize = size * bgImageScale;
+      targetCtx.drawImage(
+        bgImg,
+        centerX - bgDrawSize / 2 + bgImageOffsetX,
+        centerY - bgDrawSize / 2 + bgImageOffsetY,
+        bgDrawSize,
+        bgDrawSize
+      );
     }
-    maskCtx.putImageData(maskData, 0, 0);
+  };
+
+  // Helper function to draw the masked base image
+  const drawMaskedBase = () => {
+    ctx.save();
     
-    baseCtx.globalCompositeOperation = 'destination-in';
-    baseCtx.drawImage(maskCanvas, 0, 0);
-    ctx.drawImage(baseCanvas, 0, 0);
+    if (maskImg) {
+      // Custom mask image - ignore maskShape
+      const baseCanvas = document.createElement('canvas');
+      baseCanvas.width = size;
+      baseCanvas.height = size;
+      const baseCtx = baseCanvas.getContext('2d');
+      
+      drawBackground(baseCtx);
+      baseCtx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+      
+      const maskCanvas = document.createElement('canvas');
+      maskCanvas.width = size;
+      maskCanvas.height = size;
+      const maskCtx = maskCanvas.getContext('2d');
+      const maskDrawSize = size * maskScale;
+      
+      maskCtx.drawImage(maskImg, centerX - maskDrawSize / 2 + maskOffsetX, centerY - maskDrawSize / 2 + maskOffsetY, maskDrawSize, maskDrawSize);
+      
+      const maskData = maskCtx.getImageData(0, 0, size, size);
+      const pixels = maskData.data;
+      for (let i = 0; i < pixels.length; i += 4) {
+        const luminosity = (pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114);
+        pixels[i + 3] = Math.min(pixels[i + 3], luminosity);
+      }
+      maskCtx.putImageData(maskData, 0, 0);
+      
+      baseCtx.globalCompositeOperation = 'destination-in';
+      baseCtx.drawImage(maskCanvas, 0, 0);
+      ctx.drawImage(baseCanvas, 0, 0);
+    } else {
+      // Use mask shape (circle, square, hexagon)
+      const radius = (size / 2) * maskRadius;
+      applyMaskShape(ctx, maskShape, centerX, centerY, radius, maskOffsetX, maskOffsetY);
+      
+      drawBackground(ctx);
+      ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+    }
+    
+    ctx.restore();
+  };
+
+  // Helper function to draw the frame
+  const drawFrame = () => {
+    const frameSize = size * frameScale;
+    ctx.drawImage(frameImg, centerX - frameSize / 2 + frameOffsetX, centerY - frameSize / 2 + frameOffsetY, frameSize, frameSize);
+  };
+
+  // Helper function to draw the overlay (always on top)
+  const drawOverlay = () => {
+    if (overlayImg) {
+      const overlaySize = size * overlayScale;
+      ctx.drawImage(
+        overlayImg,
+        centerX - overlaySize / 2 + overlayOffsetX,
+        centerY - overlaySize / 2 + overlayOffsetY,
+        overlaySize,
+        overlaySize
+      );
+    }
+  };
+
+  // Draw in order based on baseOverFrame setting
+  if (baseOverFrame) {
+    // Frame first, then base on top
+    drawFrame();
+    drawMaskedBase();
   } else {
-    ctx.beginPath();
-    const radius = (size / 2) * maskRadius;
-    ctx.arc(centerX + maskOffsetX, centerY + maskOffsetY, radius, 0, Math.PI * 2);
-    ctx.clip();
-    
-    if (bgEnabled && bgColor) {
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, size, size);
-    }
-    
-    ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+    // Base first, then frame on top (default)
+    drawMaskedBase();
+    drawFrame();
   }
-
-  ctx.restore();
-
-  const frameSize = size * frameScale;
-  ctx.drawImage(frameImg, centerX - frameSize / 2 + frameOffsetX, centerY - frameSize / 2 + frameOffsetY, frameSize, frameSize);
+  
+  // Overlay is always on top of everything
+  drawOverlay();
 
   return new Promise((resolve) => {
     canvas.toBlob(resolve, 'image/webp', quality);

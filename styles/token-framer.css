@@ -212,6 +212,30 @@
   color: var(--color-light-1, #ffffff);
 }
 
+/* Save Image Button under Preview */
+.tfl-preview-section > .tfl-save-image-button {
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  width: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 1px solid var(--color-border-dark, #555);
+  border-radius: 4px;
+  background: rgba(50, 120, 180, 0.25);
+  color: var(--color-light-2, #dddddd);
+  cursor: pointer;
+  font-size: var(--font-size-11);
+  transition: all 0.15s ease;
+}
+
+.tfl-preview-section > .tfl-save-image-button:hover {
+  background: rgba(50, 120, 180, 0.4);
+  border-color: rgba(50, 120, 180, 0.6);
+  color: var(--color-light-1, #ffffff);
+}
+
 /* Right Column: Settings */
 .tfl-settings-section {
   flex: 1;
@@ -293,13 +317,30 @@
   color: var(--color-light-3, #bbbbbb);
 }
 
-.tfl-form-group .range-value {
-  flex: 0 0 36px;
-  text-align: right;
+.tfl-form-group input.range-value {
+  flex: 0 0 55px;
+  width: 55px;
+  text-align: center;
   font-family: var(--font-mono);
   font-size: var(--font-size-11);
-  opacity: 0.8;
   color: var(--color-text-light-primary, #ddd);
+  background: var(--color-bg-option, #333);
+  border: 1px solid var(--color-border-dark, #444);
+  border-radius: 3px;
+  padding: 2px 4px;
+  -moz-appearance: textfield;
+}
+
+.tfl-form-group input.range-value::-webkit-outer-spin-button,
+.tfl-form-group input.range-value::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.tfl-form-group input.range-value:focus {
+  outline: none;
+  border-color: var(--color-border-highlight, #666);
+  background: var(--color-bg-option-hover, #3a3a3a);
 }
 
 .tfl-inline-label {
@@ -339,22 +380,91 @@
 }
 
 /* ====================================== */
-/* DIALOG - Subheaders                    */
+/* DIALOG - Collapsible Sections          */
 /* ====================================== */
 
-.tfl-subheader {
+.tfl-collapsible {
   margin-top: 0.75rem;
-  margin-bottom: 0.4rem;
-  padding: 0.3rem 0;
-  border-bottom: 1px solid var(--color-border-dark-tertiary, #333);
+  border: 1px solid var(--color-border-dark-tertiary, #333);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.15);
 }
 
-.tfl-subheader label {
+.tfl-collapsible-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 3px 3px 0 0;
+  transition: background 0.15s ease;
+}
+
+.tfl-collapsible-header:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tfl-collapsible-header label {
   font-size: var(--font-size-11);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  color: var(--color-text-light-primary, #ddd);
+  cursor: pointer;
+  flex: 1;
+}
+
+.tfl-collapse-icon {
+  font-size: var(--font-size-10);
   color: var(--color-text-dark-secondary, #888);
+  transition: transform 0.2s ease;
+  width: 12px;
+  text-align: center;
+}
+
+.tfl-collapsible[data-collapsed="true"] .tfl-collapse-icon {
+  transform: rotate(-90deg);
+}
+
+.tfl-collapsible-content {
+  padding: 0.5rem 0.6rem 0.6rem;
+  border-top: 1px solid var(--color-border-dark-tertiary, #333);
+}
+
+.tfl-collapsible[data-collapsed="true"] .tfl-collapsible-content {
+  display: none;
+}
+
+.tfl-collapsible[data-collapsed="true"] .tfl-collapsible-header {
+  border-radius: 3px;
+}
+
+/* ====================================== */
+/* DIALOG - Select Dropdowns              */
+/* ====================================== */
+
+.tfl-form-group select {
+  flex: 1;
+  background: var(--color-cool-5, #2a2a2a);
+  border: 1px solid var(--color-border-dark, #555);
+  color: var(--color-light-1, #eeeeee);
+  border-radius: 4px;
+  padding: 0.35rem 0.5rem;
+  font-size: var(--font-size-12);
+  cursor: pointer;
+}
+
+.tfl-form-group select:focus {
+  border-color: var(--color-border-highlight, #888);
+  outline: none;
+  background: var(--color-cool-4, #333);
+}
+
+.tfl-form-group select option {
+  background: var(--color-cool-5, #2a2a2a);
+  color: var(--color-light-1, #eeeeee);
 }
 
 /* ====================================== */
@@ -426,6 +536,43 @@
   border-color: var(--color-border-highlight, #888);
   outline: none;
   background: var(--color-cool-4, #333);
+}
+
+/* ====================================== */
+/* DIALOG - Toggle Options                */
+/* ====================================== */
+
+.tfl-toggle-row {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--color-border-dark-tertiary, #333);
+}
+
+.tfl-toggle-option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tfl-toggle-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--color-shadow-primary, #7a7971);
+}
+
+.tfl-toggle-option label {
+  font-weight: 500;
+  font-size: var(--font-size-12);
+  color: var(--color-text-light-primary, #ddd);
+  cursor: pointer;
+}
+
+.tfl-toggle-row .hint {
+  margin: 0.2rem 0 0 0;
+  font-size: var(--font-size-11);
+  font-style: italic;
+  color: var(--color-light-3, #bbbbbb);
 }
 
 /* ====================================== */

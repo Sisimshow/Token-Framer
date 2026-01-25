@@ -18,6 +18,10 @@
         <i class="fas fa-sync-alt"></i>
         {{localize "TOKEN-FRAMER.Config.RefreshFromToken"}}
       </button>
+      <button type="button" class="tfl-save-image-button" title="{{localize 'TOKEN-FRAMER.Config.SaveImageHint'}}">
+        <i class="fas fa-download"></i>
+        {{localize "TOKEN-FRAMER.Config.SaveImage"}}
+      </button>
     </div>
 
     <!-- Right Column: Settings -->
@@ -46,108 +50,205 @@
         </div>
       </div>
 
-      <!-- Mask Image -->
-      <div class="tfl-form-group">
-        <label>{{localize "TOKEN-FRAMER.Config.MaskImage"}}</label>
-        <div class="tfl-form-fields">
-          <input type="text" name="maskImage" value="{{maskImage}}" placeholder="{{localize 'TOKEN-FRAMER.Config.AutoCircular'}}">
-          <button type="button" class="tfl-icon-button tfl-file-picker" data-target="maskImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
-            <i class="fas fa-file-import"></i>
-          </button>
-        </div>
-      </div>
-
       <!-- Base Image Settings -->
-      <div class="tfl-subheader">
-        <label>{{localize "TOKEN-FRAMER.Config.BaseImageSettings"}}</label>
-      </div>
+      <div class="tfl-collapsible" data-collapsed="false">
+        <div class="tfl-collapsible-header">
+          <i class="fas fa-chevron-down tfl-collapse-icon"></i>
+          <label>{{localize "TOKEN-FRAMER.Config.BaseImageSettings"}}</label>
+        </div>
+        <div class="tfl-collapsible-content">
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.BaseScale"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="baseScale" value="{{baseScale}}" min="0.5" max="1.5" step="0.01">
+              <input type="number" class="range-value" data-for="baseScale" value="{{baseScale}}" min="0.5" max="1.5" step="0.01">
+            </div>
+          </div>
 
-      <div class="tfl-form-group">
-        <label>{{localize "TOKEN-FRAMER.Config.BaseScale"}}</label>
-        <div class="tfl-form-fields">
-          <input type="range" name="baseScale" value="{{baseScale}}" min="0.5" max="1.0" step="0.01">
-          <span class="range-value" data-for="baseScale">{{baseScale}}</span>
+          <div class="tfl-form-group tfl-offset-group">
+            <label>{{localize "TOKEN-FRAMER.Config.BaseOffset"}}</label>
+            <div class="tfl-form-fields">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+              <input type="number" name="baseOffsetX" value="{{baseOffsetX}}" step="1" placeholder="0">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+              <input type="number" name="baseOffsetY" value="{{baseOffsetY}}" step="1" placeholder="0">
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="tfl-form-group tfl-offset-group">
-        <label>{{localize "TOKEN-FRAMER.Config.BaseOffset"}}</label>
-        <div class="tfl-form-fields">
-          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
-          <input type="number" name="baseOffsetX" value="{{baseOffsetX}}" step="1" placeholder="0">
-          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
-          <input type="number" name="baseOffsetY" value="{{baseOffsetY}}" step="1" placeholder="0">
+      <!-- Frame Settings (moved above Mask Settings) -->
+      <div class="tfl-collapsible" data-collapsed="true">
+        <div class="tfl-collapsible-header">
+          <i class="fas fa-chevron-down tfl-collapse-icon"></i>
+          <label>{{localize "TOKEN-FRAMER.Config.FrameSettings"}}</label>
+        </div>
+        <div class="tfl-collapsible-content">
+          <div class="tfl-form-group tfl-toggle-row">
+            <div class="tfl-toggle-option">
+              <input type="checkbox" name="baseOverFrame" id="tfl-base-over-frame" {{baseOverFrame}}>
+              <label for="tfl-base-over-frame">{{localize "TOKEN-FRAMER.Config.BaseOverFrame"}}</label>
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.BaseOverFrameHint"}}</p>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.FrameScale"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="frameScale" value="{{frameScale}}" min="0.5" max="1.5" step="0.01">
+              <input type="number" class="range-value" data-for="frameScale" value="{{frameScale}}" min="0.5" max="1.5" step="0.01">
+            </div>
+          </div>
+
+          <div class="tfl-form-group tfl-offset-group">
+            <label>{{localize "TOKEN-FRAMER.Config.FrameOffset"}}</label>
+            <div class="tfl-form-fields">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+              <input type="number" name="frameOffsetX" value="{{frameOffsetX}}" step="1" placeholder="0">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+              <input type="number" name="frameOffsetY" value="{{frameOffsetY}}" step="1" placeholder="0">
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Mask Settings -->
-      <div class="tfl-subheader">
-        <label>{{localize "TOKEN-FRAMER.Config.MaskSettings"}}</label>
-      </div>
+      <div class="tfl-collapsible" data-collapsed="true">
+        <div class="tfl-collapsible-header">
+          <i class="fas fa-chevron-down tfl-collapse-icon"></i>
+          <label>{{localize "TOKEN-FRAMER.Config.MaskSettings"}}</label>
+        </div>
+        <div class="tfl-collapsible-content">
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.MaskShape"}}</label>
+            <div class="tfl-form-fields">
+              <select name="maskShape">
+                <option value="circle" {{#if (eq maskShape "circle")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeCircle"}}</option>
+                <option value="square" {{#if (eq maskShape "square")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeSquare"}}</option>
+                <option value="hexagon" {{#if (eq maskShape "hexagon")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeHexagon"}}</option>
+                <option value="none" {{#if (eq maskShape "none")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeNone"}}</option>
+              </select>
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskShapeHint"}}</p>
+          </div>
 
-      <div class="tfl-form-group">
-        <label>{{localize "TOKEN-FRAMER.Config.MaskRadius"}}</label>
-        <div class="tfl-form-fields">
-          <input type="range" name="maskRadius" value="{{maskRadius}}" min="0.5" max="1.0" step="0.01">
-          <span class="range-value" data-for="maskRadius">{{maskRadius}}</span>
+          <!-- Mask Image (moved here) -->
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.MaskImage"}}</label>
+            <div class="tfl-form-fields">
+              <input type="text" name="maskImage" value="{{maskImage}}" placeholder="{{localize 'TOKEN-FRAMER.Config.MaskImagePlaceholder'}}">
+              <button type="button" class="tfl-icon-button tfl-file-picker" data-target="maskImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
+                <i class="fas fa-file-import"></i>
+              </button>
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskImageHint"}}</p>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.MaskScale"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="maskSize" value="{{maskSize}}" min="0.5" max="1.5" step="0.01">
+              <input type="number" class="range-value" data-for="maskSize" value="{{maskSize}}" min="0.5" max="1.5" step="0.01">
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskScaleHint"}}</p>
+          </div>
+
+          <div class="tfl-form-group tfl-offset-group">
+            <label>{{localize "TOKEN-FRAMER.Config.MaskOffset"}}</label>
+            <div class="tfl-form-fields">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+              <input type="number" name="maskOffsetX" value="{{maskOffsetX}}" step="1" placeholder="0">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+              <input type="number" name="maskOffsetY" value="{{maskOffsetY}}" step="1" placeholder="0">
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="tfl-form-group">
-        <label>{{localize "TOKEN-FRAMER.Config.MaskScale"}}</label>
-        <div class="tfl-form-fields">
-          <input type="range" name="maskScale" value="{{maskScale}}" min="0.5" max="1.5" step="0.01">
-          <span class="range-value" data-for="maskScale">{{maskScale}}</span>
+      <!-- Overlay/Decoration Settings (moved above Background) -->
+      <div class="tfl-collapsible" data-collapsed="true">
+        <div class="tfl-collapsible-header">
+          <i class="fas fa-chevron-down tfl-collapse-icon"></i>
+          <label>{{localize "TOKEN-FRAMER.Config.Overlay"}}</label>
         </div>
-      </div>
+        <div class="tfl-collapsible-content">
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.OverlayImage"}}</label>
+            <div class="tfl-form-fields">
+              <input type="text" name="overlayImage" value="{{overlayImage}}" placeholder="{{localize 'TOKEN-FRAMER.Config.OverlayImagePlaceholder'}}">
+              <button type="button" class="tfl-icon-button tfl-file-picker" data-target="overlayImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
+                <i class="fas fa-file-import"></i>
+              </button>
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.OverlayHint"}}</p>
+          </div>
 
-      <div class="tfl-form-group tfl-offset-group">
-        <label>{{localize "TOKEN-FRAMER.Config.MaskOffset"}}</label>
-        <div class="tfl-form-fields">
-          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
-          <input type="number" name="maskOffsetX" value="{{maskOffsetX}}" step="1" placeholder="0">
-          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
-          <input type="number" name="maskOffsetY" value="{{maskOffsetY}}" step="1" placeholder="0">
-        </div>
-      </div>
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.OverlayScale"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="overlayScale" value="{{overlayScale}}" min="0.5" max="1.5" step="0.01">
+              <input type="number" class="range-value" data-for="overlayScale" value="{{overlayScale}}" min="0.5" max="1.5" step="0.01">
+            </div>
+          </div>
 
-      <!-- Frame Settings -->
-      <div class="tfl-subheader">
-        <label>{{localize "TOKEN-FRAMER.Config.FrameSettings"}}</label>
-      </div>
-
-      <div class="tfl-form-group">
-        <label>{{localize "TOKEN-FRAMER.Config.FrameScale"}}</label>
-        <div class="tfl-form-fields">
-          <input type="range" name="frameScale" value="{{frameScale}}" min="0.5" max="1.5" step="0.01">
-          <span class="range-value" data-for="frameScale">{{frameScale}}</span>
-        </div>
-      </div>
-
-      <div class="tfl-form-group tfl-offset-group">
-        <label>{{localize "TOKEN-FRAMER.Config.FrameOffset"}}</label>
-        <div class="tfl-form-fields">
-          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
-          <input type="number" name="frameOffsetX" value="{{frameOffsetX}}" step="1" placeholder="0">
-          <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
-          <input type="number" name="frameOffsetY" value="{{frameOffsetY}}" step="1" placeholder="0">
+          <div class="tfl-form-group tfl-offset-group">
+            <label>{{localize "TOKEN-FRAMER.Config.OverlayOffset"}}</label>
+            <div class="tfl-form-fields">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+              <input type="number" name="overlayOffsetX" value="{{overlayOffsetX}}" step="1" placeholder="0">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+              <input type="number" name="overlayOffsetY" value="{{overlayOffsetY}}" step="1" placeholder="0">
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Background Settings -->
-      <div class="tfl-subheader">
-        <label>{{localize "TOKEN-FRAMER.Config.Background"}}</label>
-      </div>
-
-      <div class="tfl-form-group tfl-bg-row">
-        <div class="tfl-bg-enable">
-          <input type="checkbox" name="bgEnabled" id="tfl-bg-enabled" {{bgEnabled}}>
-          <label for="tfl-bg-enabled">{{localize "TOKEN-FRAMER.Config.BackgroundEnable"}}</label>
+      <div class="tfl-collapsible" data-collapsed="true">
+        <div class="tfl-collapsible-header">
+          <i class="fas fa-chevron-down tfl-collapse-icon"></i>
+          <label>{{localize "TOKEN-FRAMER.Config.Background"}}</label>
         </div>
-        <div class="tfl-bg-color">
-          <label>{{localize "TOKEN-FRAMER.Config.BackgroundColor"}}</label>
-          <input type="color" name="bgColor" value="{{bgColor}}" class="tfl-color-picker">
-          <input type="text" name="bgColorText" value="{{bgColor}}" class="tfl-color-text" placeholder="#000000">
+        <div class="tfl-collapsible-content">
+          <div class="tfl-form-group tfl-bg-row">
+            <div class="tfl-bg-enable">
+              <input type="checkbox" name="bgEnabled" id="tfl-bg-enabled" {{bgEnabled}}>
+              <label for="tfl-bg-enabled">{{localize "TOKEN-FRAMER.Config.BackgroundEnable"}}</label>
+            </div>
+            <div class="tfl-bg-color">
+              <label>{{localize "TOKEN-FRAMER.Config.BackgroundColor"}}</label>
+              <input type="color" name="bgColor" value="{{bgColor}}" class="tfl-color-picker">
+              <input type="text" name="bgColorText" value="{{bgColor}}" class="tfl-color-text" placeholder="#000000">
+            </div>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.BackgroundImage"}}</label>
+            <div class="tfl-form-fields">
+              <input type="text" name="bgImage" value="{{bgImage}}" placeholder="{{localize 'TOKEN-FRAMER.Config.BackgroundImagePlaceholder'}}">
+              <button type="button" class="tfl-icon-button tfl-file-picker" data-target="bgImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
+                <i class="fas fa-file-import"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.BackgroundImageScale"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="bgImageScale" value="{{bgImageScale}}" min="0.5" max="1.5" step="0.01">
+              <input type="number" class="range-value" data-for="bgImageScale" value="{{bgImageScale}}" min="0.5" max="1.5" step="0.01">
+            </div>
+          </div>
+
+          <div class="tfl-form-group tfl-offset-group">
+            <label>{{localize "TOKEN-FRAMER.Config.BackgroundImageOffset"}}</label>
+            <div class="tfl-form-fields">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+              <input type="number" name="bgImageOffsetX" value="{{bgImageOffsetX}}" step="1" placeholder="0">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+              <input type="number" name="bgImageOffsetY" value="{{bgImageOffsetY}}" step="1" placeholder="0">
+            </div>
+          </div>
         </div>
       </div>
 
