@@ -144,7 +144,7 @@ Hooks.on('preUpdateActor', async (actor, changes, options, userId) => {
 
   try {
     // Generate the frame
-    const result = await getFramedPathForImage(newTexture, frameData, actor.id, true);
+    const result = await getFramedPathForImage(newTexture, frameData);
 
     if (result) {
       // Update the changes object to use the framed image
@@ -166,7 +166,7 @@ async function performAsyncFrameUpdate(document, originalChanges, baseImage, fra
   try {
     // We imported this at the top now, so we can use it directly
     debugLog('🎨 Generating frame...');
-    const result = await getFramedPathForImage(baseImage, frameData, document.id);
+    const result = await getFramedPathForImage(baseImage, frameData);
 
     if (result) {
       // Clone changes
@@ -314,7 +314,7 @@ Hooks.on('updateActor', async (actor, changes, options, userId) => {
     if (originalImage.includes(cacheFolder) || originalImage.includes('token-framer-cache')) return;
     
     debugLog('Generating frame for prototype token via updateActor');
-    const cachedPath = await generateFrameForPrototype(originalImage, frameData, actor.id);
+    const cachedPath = await generateFrameForPrototype(originalImage, frameData);
     
     if (cachedPath) {
       await actor.update({

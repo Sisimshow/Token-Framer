@@ -427,14 +427,22 @@ class TokenFramerDialog extends FormApplication {
           type: 'imagevideo',
           current: input?.value ?? '',
           callback: (path) => {
-            if (targetName === 'baseImage' && isFromCache(path)) {
+            // Decode URL encoding (FilePicker encodes spaces as %20)
+            let decodedPath;
+            try {
+              decodedPath = decodeURIComponent(path);
+            } catch (e) {
+              decodedPath = path;
+            }
+            
+            if (targetName === 'baseImage' && isFromCache(decodedPath)) {
               ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.CachedImageWarning'));
               return;
             }
             if (input) {
-              input.value = path;
+              input.value = decodedPath;
               if (targetName === 'baseImage') {
-                this.baseImagePath = path;
+                this.baseImagePath = decodedPath;
               }
               this._debouncedPreviewUpdate(rootEl);
             }
@@ -853,7 +861,7 @@ class TokenFramerDialog extends FormApplication {
       const actor = game.actors.get(this.token.actorId) || this.token.actor;
       
       if (actor) {
-        const cachedPath = await generateFrameForPrototype(this.baseImagePath, formData, actor.id);
+        const cachedPath = await generateFrameForPrototype(this.baseImagePath, formData);
         
         if (cachedPath) {
           // Store pending data - will be merged in preUpdateActor hook

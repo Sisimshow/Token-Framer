@@ -23,13 +23,55 @@ export function getFrameData(token) {
 }
 
 /**
- * Generate a cache key based on base image filename and token/actor ID
+ * Simple deterministic hash function (djb2 algorithm)
+ * Always produces the same output for the same input
  */
-function generateCacheKey(baseImagePath, id, isPrototype = false) {
-  const baseFilename = baseImagePath.split('/').pop().replace(/\.[^.]+$/, '');
-  const sanitizedFilename = baseFilename.replace(/[^a-zA-Z0-9_-]/g, '_');
-  const prefix = isPrototype ? 'proto' : 'token';
-  return `frame_${prefix}_${id}_${sanitizedFilename}`;
+function simpleHash(str) {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  // Convert to positive hex string, take first 6 characters
+  return Math.abs(hash).toString(16).substring(0, 6);
+}
+
+/**
+ * Normalize a path by decoding URL encoding
+ */
+function normalizePath(path) {
+  try {
+    return decodeURIComponent(path);
+  } catch (e) {
+    return path;
+  }
+}
+
+/**
+ * Generate a cache key based on base image and frame image paths
+ * Format: {baseParentFolder}_{baseFilename}_{frameFilename}_{combinedHash}_token
+ */
+function generateCacheKey(baseImagePath, frameImagePath) {
+  // Normalize paths - decode URL encoding to ensure consistency
+  const normalizedBase = normalizePath(baseImagePath);
+  const normalizedFrame = normalizePath(frameImagePath);
+  
+  // Extract base image info
+  const baseParts = normalizedBase.split('/');
+  const baseFilename = baseParts.pop().replace(/\.[^.]+$/, '');
+  const sanitizedBaseFilename = baseFilename.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
+  const baseParentFolder = baseParts.length > 0 ? baseParts[baseParts.length - 1] : 'root';
+  const sanitizedBaseParent = baseParentFolder.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 20);
+  
+  // Extract frame image info
+  const frameParts = normalizedFrame.split('/');
+  const frameFilename = frameParts.pop().replace(/\.[^.]+$/, '');
+  const sanitizedFrameFilename = frameFilename.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 25);
+  
+  // Generate hash of both full paths combined for uniqueness
+  const combinedHash = simpleHash(normalizedBase + '|' + normalizedFrame);
+  
+  return `${sanitizedBaseParent}_${sanitizedBaseFilename}_${sanitizedFrameFilename}_${combinedHash}_token`;
 }
 
 /**
@@ -326,12 +368,12 @@ async function saveToCacheFile(blob, filename) {
  * CRITICAL HELPER: Generates a framed image path WITHOUT updating the token document.
  * Used by main.js "Stop & Swap" logic.
  */
-export async function getFramedPathForImage(baseImagePath, frameData, id, isPrototype = false) {
+export async function getFramedPathForImage(baseImagePath, frameData) {
   // 1. Validate inputs
   if (!frameData.enabled || !frameData.frameImage) return null;
 
-  // 2. Create Cache Key
-  const cacheKey = generateCacheKey(baseImagePath, id, isPrototype);
+  // 2. Create Cache Key (based on base image + frame image paths)
+  const cacheKey = generateCacheKey(baseImagePath, frameData.frameImage);
   
   // 3. Generate the Blob (The slow part)
   const cacheResolution = game.settings.get(MODULE_ID, 'cacheResolution') ?? 1000;
@@ -371,7 +413,7 @@ export async function applyFrameToToken(token, forceRegenerate = false) {
     await token.document.setFlag(MODULE_ID, 'originalImage', baseImagePath);
   }
 
-  const cacheKey = generateCacheKey(baseImagePath, token.document.id, false);
+  const cacheKey = generateCacheKey(baseImagePath, frameData.frameImage);
   let cachedPath = null;
 
   try {
@@ -424,15 +466,15 @@ export async function restoreOriginalImage(token) {
 /**
  * Generate and cache a framed image for a prototype token
  */
-export async function generateFrameForPrototype(baseImagePath, frameData, actorId) {
-  if (!frameData.enabled || !frameData.frameImage || !baseImagePath || !actorId) {
+export async function generateFrameForPrototype(baseImagePath, frameData) {
+  if (!frameData.enabled || !frameData.frameImage || !baseImagePath) {
     return null;
   }
 
-  const cacheKey = generateCacheKey(baseImagePath, actorId, true);
+  const cacheKey = generateCacheKey(baseImagePath, frameData.frameImage);
   
   try {
-    debugLog('Generating frame for prototype token (actor:', actorId, ')');
+    debugLog('Generating frame for prototype token');
     const cacheResolution = game.settings.get(MODULE_ID, 'cacheResolution') ?? 1000;
     const cacheQuality = game.settings.get(MODULE_ID, 'cacheQuality') ?? 0.95;
     
@@ -486,14 +528,20 @@ export async function regenerateAllFrames() {
   // 2. Process Actors (Prototype Tokens)
   for (const actor of actors) {
     const frameData = actor.prototypeToken.getFlag(MODULE_ID, 'frameData');
-    const originalImage = actor.prototypeToken.getFlag(MODULE_ID, 'originalImage') 
+    let originalImage = actor.prototypeToken.getFlag(MODULE_ID, 'originalImage') 
                        || actor.prototypeToken.texture.src;
     
     if (!originalImage) continue;
 
-    console.log(`${MODULE_ID} | Regenerating Actor: ${actor.name}`);
+    // Skip if the original image was lost (current texture is a cached file)
+    if (originalImage.includes("token-framer-cache")) {
+      console.warn(`${MODULE_ID} | Skipped ${actor.name} - Lost original image source.`);
+      continue;
+    }
+
+    console.log(`${MODULE_ID} | Regenerating Prototype Token: ${actor.prototypeToken.name} (Actor: ${actor.name})`);
     
-    const cachedPath = await generateFrameForPrototype(originalImage, frameData, actor.id);
+    const cachedPath = await generateFrameForPrototype(originalImage, frameData);
     
     if (cachedPath) {
       await actor.update({
@@ -519,7 +567,7 @@ export async function regenerateAllFrames() {
     }
 
     // Direct call since we are in the same file now
-    const result = await getFramedPathForImage(baseImagePath, frameData, tokenDoc.id);
+    const result = await getFramedPathForImage(baseImagePath, frameData);
 
     if (result) {
         await tokenDoc.update({
