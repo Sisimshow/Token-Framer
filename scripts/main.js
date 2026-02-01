@@ -252,6 +252,13 @@ Hooks.on('preCreateToken', (document, data, options, userId) => {
   const actor = document.actor;
   if (!actor) return;
   
+  // If this token already has Token Framer data (e.g., from copy-paste),
+  // preserve the copied token's state instead of overwriting with prototype data
+  if (document.flags?.[MODULE_ID]?.frameData !== undefined) {
+    debugLog('Preserving existing Token Framer data (copy-paste detected)');
+    return;
+  }
+  
   const prototypeFrameData = actor.prototypeToken?.getFlag?.(MODULE_ID, 'frameData');
   const cachedFramePath = actor.prototypeToken?.getFlag?.(MODULE_ID, 'cachedFramePath');
   const originalImage = actor.prototypeToken?.getFlag?.(MODULE_ID, 'originalImage');
