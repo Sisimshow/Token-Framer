@@ -51,7 +51,7 @@ function normalizePath(path) {
  * Generate a cache key based on base image and frame image paths
  * Format: {baseParentFolder}_{baseFilename}_{frameFilename}_{combinedHash}_token
  */
-function generateCacheKey(baseImagePath, frameImagePath) {
+export function generateCacheKey(baseImagePath, frameImagePath) {
   // Normalize paths - decode URL encoding to ensure consistency
   const normalizedBase = normalizePath(baseImagePath);
   const normalizedFrame = normalizePath(frameImagePath);
@@ -60,7 +60,7 @@ function generateCacheKey(baseImagePath, frameImagePath) {
   const baseParts = normalizedBase.split('/');
   const baseFilename = baseParts.pop().replace(/\.[^.]+$/, '');
   const sanitizedBaseFilename = baseFilename.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
-  const baseParentFolder = baseParts.length > 0 ? baseParts[baseParts.length - 1] : 'root';
+  const baseParentFolder = baseParts.length > 0 ? baseParts[baseParts.length - 1] : '';
   const sanitizedBaseParent = baseParentFolder.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 20);
   
   // Extract frame image info
@@ -71,7 +71,8 @@ function generateCacheKey(baseImagePath, frameImagePath) {
   // Generate hash of both full paths combined for uniqueness
   const combinedHash = simpleHash(normalizedBase + '|' + normalizedFrame);
   
-  return `${sanitizedBaseParent}_${sanitizedBaseFilename}_${sanitizedFrameFilename}_${combinedHash}_token`;
+  const prefix = sanitizedBaseParent ? `${sanitizedBaseParent}_` : '';
+  return `${prefix}${sanitizedBaseFilename}_${sanitizedFrameFilename}_${combinedHash}_token`;
 }
 
 /**
@@ -182,7 +183,8 @@ async function compositeImage(baseImagePath, frameData, size = 1000, quality = 0
     baseOverFrame = false,
     bgEnabled = false, bgColor = '#000000',
     bgImage = '', bgImageScale = 1.0, bgImageOffsetX = 0, bgImageOffsetY = 0,
-    overlayImage = '', overlayScale = 1.0, overlayOffsetX = 0, overlayOffsetY = 0
+    overlayImage = '', overlayScale = 1.0, overlayOffsetX = 0, overlayOffsetY = 0,
+    popOutEnabled = false, popOutDegrees = 180, popOutRotation = 0
   } = frameData;
 
   const canvas = document.createElement('canvas');
@@ -300,17 +302,34 @@ async function compositeImage(baseImagePath, frameData, size = 1000, quality = 0
     }
   };
 
+  // Helper function to draw the pop-out layer (base image clipped to a pie wedge, above the frame)
+  const drawPopOut = () => {
+    if (!popOutEnabled || popOutDegrees <= 0) return;
+    ctx.save();
+    const halfAngle = (popOutDegrees / 2) * Math.PI / 180;
+    // -90° offset so 0° rotation = top (12 o'clock)
+    const centerAngle = (popOutRotation - 90) * Math.PI / 180;
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.arc(centerX, centerY, size, centerAngle - halfAngle, centerAngle + halfAngle);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+    ctx.restore();
+  };
+
   // Draw in order based on baseOverFrame setting
   if (baseOverFrame) {
-    // Frame first, then base on top
     drawFrame();
     drawMaskedBase();
   } else {
-    // Base first, then frame on top (default)
     drawMaskedBase();
     drawFrame();
   }
   
+  // Pop-out draws unmasked base image above the frame in a pie wedge
+  drawPopOut();
+
   // Overlay is always on top of everything
   drawOverlay();
 

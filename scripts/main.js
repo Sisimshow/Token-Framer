@@ -21,6 +21,17 @@ export function debugLog(...args) {
   }
 }
 
+/**
+ * Check if a filename ends with "token" (case-insensitive) before the extension.
+ * Files named this way are treated as already-framed and skipped by auto-framing.
+ */
+function isAlreadyFramedFile(filePath) {
+  if (!filePath) return false;
+  const filename = filePath.split('/').pop().split('?')[0];
+  const nameWithoutExt = filename.replace(/\.[^.]+$/, '');
+  return /token$/i.test(nameWithoutExt);
+}
+
 Hooks.once('init', () => {
   console.log(`${MODULE_ID} | Initializing Token Framer`);
   registerSettings();
@@ -56,9 +67,13 @@ Hooks.on('preUpdateToken', (document, changes, options, userId) => {
   const newTexture = changes.texture?.src;
   if (!newTexture) return true;
 
-  // 5. Ignore if it's already a cached file (prevents loops)
+  // 5. Ignore if it's already a cached or pre-framed file (prevents loops and double-framing)
   const cacheFolder = game.settings.get(MODULE_ID, 'cacheFolder') || 'token-framer-cache';
   if (newTexture.includes(cacheFolder) || newTexture.includes('token-framer-cache')) return true;
+  if (isAlreadyFramedFile(newTexture)) {
+    debugLog('Skipping auto-frame for already-framed file:', newTexture);
+    return true;
+  }
 
   // 6. Check if Frame is Enabled
   const currentFrameData = document.getFlag(MODULE_ID, 'frameData') ?? {};
@@ -120,9 +135,13 @@ Hooks.on('preUpdateActor', async (actor, changes, options, userId) => {
   const newTexture = changes.prototypeToken?.texture?.src;
   if (!newTexture) return;
 
-  // Ignore if it's already a cached file
+  // Ignore if it's already a cached or pre-framed file
   const cacheFolder = game.settings.get(MODULE_ID, 'cacheFolder') || 'token-framer-cache';
   if (newTexture.includes(cacheFolder) || newTexture.includes('token-framer-cache')) return;
+  if (isAlreadyFramedFile(newTexture)) {
+    debugLog('Skipping auto-frame for already-framed prototype file:', newTexture);
+    return;
+  }
 
   // Check if Frame is Enabled - check BOTH saved state AND pending changes
   const savedFrameData = actor.prototypeToken.getFlag(MODULE_ID, 'frameData');

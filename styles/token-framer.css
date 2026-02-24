@@ -188,6 +188,37 @@
   font-size: 3rem;
 }
 
+/* Drop Overlay for Drag-and-Drop */
+.tfl-drop-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: rgba(50, 120, 180, 0.35);
+  border: 3px dashed rgba(100, 180, 255, 0.7);
+  border-radius: 6px;
+  color: white;
+  font-size: var(--font-size-14);
+  font-weight: 600;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.tfl-drop-overlay i {
+  font-size: 3rem;
+  opacity: 0.8;
+}
+
+.tfl-drop-overlay.active {
+  display: flex;
+}
+
 /* Refresh Button under Preview */
 .tfl-preview-section > .tfl-refresh-button {
   margin-top: 0.75rem;
@@ -212,8 +243,8 @@
   color: var(--color-light-1, #ffffff);
 }
 
-/* Save Image Button under Preview */
-.tfl-preview-section > .tfl-save-image-button {
+/* Reset Button under Preview */
+.tfl-preview-section > .tfl-restore-button.tfl-preview-action {
   margin-top: 0.5rem;
   padding: 0.35rem 0.75rem;
   width: 250px;
@@ -221,18 +252,18 @@
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  border: 1px solid var(--color-border-dark, #555);
+  border: 1px solid rgba(180, 100, 40, 0.4);
   border-radius: 4px;
-  background: rgba(50, 120, 180, 0.25);
+  background: rgba(180, 100, 40, 0.2);
   color: var(--color-light-2, #dddddd);
   cursor: pointer;
   font-size: var(--font-size-11);
   transition: all 0.15s ease;
 }
 
-.tfl-preview-section > .tfl-save-image-button:hover {
-  background: rgba(50, 120, 180, 0.4);
-  border-color: rgba(50, 120, 180, 0.6);
+.tfl-preview-section > .tfl-restore-button.tfl-preview-action:hover {
+  background: rgba(180, 100, 40, 0.35);
+  border-color: rgba(180, 100, 40, 0.6);
   color: var(--color-light-1, #ffffff);
 }
 
@@ -605,6 +636,26 @@
   border-color: var(--color-border-highlight, #666);
 }
 
+.tfl-dialog-footer .tfl-save-image-button {
+  background: rgba(100, 100, 140, 0.25);
+  border-color: rgba(100, 100, 140, 0.4);
+}
+
+.tfl-dialog-footer .tfl-save-image-button:hover {
+  background: rgba(100, 100, 140, 0.4);
+  border-color: rgba(100, 100, 140, 0.6);
+}
+
+.tfl-dialog-footer .tfl-quick-save-button {
+  background: rgba(50, 120, 180, 0.25);
+  border-color: rgba(50, 120, 180, 0.4);
+}
+
+.tfl-dialog-footer .tfl-quick-save-button:hover {
+  background: rgba(50, 120, 180, 0.4);
+  border-color: rgba(50, 120, 180, 0.6);
+}
+
 .tfl-dialog-footer .tfl-apply-button {
   background: rgba(50, 140, 50, 0.3);
   border-color: rgba(50, 140, 50, 0.5);
@@ -613,16 +664,6 @@
 .tfl-dialog-footer .tfl-apply-button:hover {
   background: rgba(50, 140, 50, 0.45);
   border-color: rgba(50, 140, 50, 0.7);
-}
-
-.tfl-dialog-footer .tfl-restore-button {
-  background: rgba(180, 100, 40, 0.25);
-  border-color: rgba(180, 100, 40, 0.4);
-}
-
-.tfl-dialog-footer .tfl-restore-button:hover {
-  background: rgba(180, 100, 40, 0.4);
-  border-color: rgba(180, 100, 40, 0.6);
 }
 
 .tfl-dialog-footer button i {

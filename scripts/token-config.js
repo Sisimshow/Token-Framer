@@ -7,7 +7,7 @@
  */
 
 import { MODULE_ID, debugLog } from './main.js';
-import { applyFrameToToken, restoreOriginalImage, generateFrameForPrototype } from './frame-layer.js';
+import { applyFrameToToken, restoreOriginalImage, generateFrameForPrototype, generateCacheKey } from './frame-layer.js';
 
 // Debounce timer for preview updates
 let previewDebounceTimer = null;
@@ -37,6 +37,40 @@ export function clearPendingPrototypeData(actorId) {
 export function registerTokenConfigHooks() {
   // v13 uses renderTokenApplication for both placed tokens and prototype tokens
   Hooks.on('renderTokenApplication', renderTokenFrameControls);
+
+  // Add Token Framer button to actor sheet header (AppV1 sheets)
+  Hooks.on('getActorSheetHeaderButtons', (app, buttons) => {
+    const actor = app.document ?? app.actor;
+    if (!actor?.isOwner) return;
+    buttons.unshift({
+      class: MODULE_ID,
+      label: game.i18n.localize('TOKEN-FRAMER.Config.DialogTitle'),
+      icon: 'fas fa-circle-notch',
+      onclick: () => {
+        const dialog = new TokenFramerDialog(actor.prototypeToken);
+        dialog.render(true);
+      }
+    });
+  });
+
+  // Add Token Framer button to actor sheet header (AppV2 sheets)
+  Hooks.on('getHeaderControlsApplicationV2', (app, controls) => {
+    if (!(app.document instanceof Actor)) return;
+    const actor = app.document;
+    if (!actor.isOwner) return;
+    if (controls.some(c => c.action === 'token-framer-open')) return;
+
+    app.options.actions['token-framer-open'] = () => {
+      const dialog = new TokenFramerDialog(actor.prototypeToken);
+      dialog.render(true);
+    };
+
+    controls.push({
+      icon: 'fas fa-circle-notch',
+      label: game.i18n.localize('TOKEN-FRAMER.Config.DialogTitle'),
+      action: 'token-framer-open'
+    });
+  });
 }
 
 /**
@@ -49,6 +83,8 @@ function getDefaultSettings() {
     maskScale: game.settings.get(MODULE_ID, 'defaultMaskScale') ?? 0.95,
     overlayScale: game.settings.get(MODULE_ID, 'defaultOverlayScale') ?? 1.0,
     bgImageScale: game.settings.get(MODULE_ID, 'defaultBgImageScale') ?? 1.0,
+    popOutDegrees: game.settings.get(MODULE_ID, 'defaultPopOutDegrees') ?? 180,
+    popOutRotation: game.settings.get(MODULE_ID, 'defaultPopOutRotation') ?? 0,
     defaultFrameImage: game.settings.get(MODULE_ID, 'defaultFrameImage') ?? 'modules/token-framer/assets/default.webp'
   };
 }
@@ -63,6 +99,22 @@ function loadImage(src) {
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error(`Failed to load: ${src}`));
     img.src = src;
+  });
+}
+
+function isDataUrl(path) {
+  return path?.startsWith('data:');
+}
+
+/**
+ * Read a File/Blob as a data URL via FileReader
+ */
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
   });
 }
 
@@ -149,7 +201,10 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
     overlayImage = '',
     overlayScale = 1.0,
     overlayOffsetX = 0,
-    overlayOffsetY = 0
+    overlayOffsetY = 0,
+    popOutEnabled = false,
+    popOutDegrees = 180,
+    popOutRotation = 0
   } = frameData;
 
   if (!baseImagePath || !frameImage) {
@@ -302,17 +357,47 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
       }
     };
 
+    // Helper function to draw the pop-out layer (base image clipped to a pie wedge, above the frame)
+    const drawPopOut = () => {
+      if (!popOutEnabled || popOutDegrees <= 0) return;
+      ctx.save();
+      const halfAngle = (popOutDegrees / 2) * Math.PI / 180;
+      const centerAngle = (popOutRotation - 90) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, size, centerAngle - halfAngle, centerAngle + halfAngle);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+      ctx.restore();
+    };
+
     // Draw in order based on baseOverFrame setting
     if (baseOverFrame) {
-      // Frame first, then base on top
       drawFrame();
       drawMaskedBase();
     } else {
-      // Base first, then frame on top (default)
       drawMaskedBase();
       drawFrame();
     }
     
+    // Pop-out draws unmasked base image above the frame in a pie wedge
+    drawPopOut();
+
+    // Draw pop-out preview highlight (UI-only, not saved to cache)
+    if (frameData.popOutPreview && popOutEnabled && popOutDegrees > 0) {
+      ctx.save();
+      const halfAngle = (popOutDegrees / 2) * Math.PI / 180;
+      const centerAngle = (popOutRotation - 90) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, size, centerAngle - halfAngle, centerAngle + halfAngle);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255, 220, 50, 0.25)';
+      ctx.fill();
+      ctx.restore();
+    }
+
     // Overlay is always on top of everything
     drawOverlay();
 
@@ -355,6 +440,8 @@ class TokenFramerDialog extends FormApplication {
     this.token = token;
     this.tokenConfigApp = tokenConfigApp;
     this.baseImagePath = '';
+    this._localFileName = null;
+    this._localUploads = new Map();
   }
 
   static get defaultOptions() {
@@ -408,7 +495,10 @@ class TokenFramerDialog extends FormApplication {
       overlayImage: frameData.overlayImage ?? '',
       overlayScale: frameData.overlayScale ?? defaults.overlayScale,
       overlayOffsetX: frameData.overlayOffsetX ?? 0,
-      overlayOffsetY: frameData.overlayOffsetY ?? 0
+      overlayOffsetY: frameData.overlayOffsetY ?? 0,
+      popOutEnabled: frameData.popOutEnabled ? 'checked' : '',
+      popOutDegrees: frameData.popOutDegrees ?? defaults.popOutDegrees,
+      popOutRotation: frameData.popOutRotation ?? defaults.popOutRotation
     };
   }
 
@@ -427,7 +517,6 @@ class TokenFramerDialog extends FormApplication {
           type: 'imagevideo',
           current: input?.value ?? '',
           callback: (path) => {
-            // Decode URL encoding (FilePicker encodes spaces as %20)
             let decodedPath;
             try {
               decodedPath = decodeURIComponent(path);
@@ -440,16 +529,92 @@ class TokenFramerDialog extends FormApplication {
               return;
             }
             if (input) {
-              input.value = decodedPath;
               if (targetName === 'baseImage') {
+                this._clearLocalImage(rootEl);
                 this.baseImagePath = decodedPath;
+              } else if (this._localUploads.has(targetName)) {
+                this._localUploads.delete(targetName);
+                input.readOnly = false;
+                input.title = '';
               }
+              input.value = decodedPath;
               this._debouncedPreviewUpdate(rootEl);
             }
           }
         }).render();
       });
     });
+
+    // Upload from PC buttons (all image fields)
+    rootEl.querySelectorAll('.tfl-upload-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const targetName = button.dataset.target;
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.addEventListener('change', async (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+          if (targetName === 'baseImage') {
+            this._setLocalImage(file, rootEl);
+          } else {
+            await this._setLocalUpload(targetName, file, rootEl);
+          }
+        });
+        fileInput.click();
+      });
+    });
+
+    // Drag-and-drop on the preview area
+    const previewWrapper = rootEl.querySelector('.tfl-preview-wrapper');
+    if (previewWrapper) {
+      const dropOverlay = rootEl.querySelector('.tfl-drop-overlay');
+      let dragCounter = 0;
+
+      previewWrapper.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        dragCounter++;
+        if (dropOverlay) dropOverlay.classList.add('active');
+      });
+      previewWrapper.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dragCounter--;
+        if (dragCounter <= 0) {
+          dragCounter = 0;
+          if (dropOverlay) dropOverlay.classList.remove('active');
+        }
+      });
+      previewWrapper.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
+      previewWrapper.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter = 0;
+        if (dropOverlay) dropOverlay.classList.remove('active');
+
+        const file = e.dataTransfer?.files?.[0];
+        if (file && file.type.startsWith('image/')) {
+          this._setLocalImage(file, rootEl);
+        }
+      });
+    }
+
+    // Paste support on the dialog
+    this._pasteHandler = (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          e.preventDefault();
+          e.stopPropagation();
+          const file = item.getAsFile();
+          if (file) this._setLocalImage(file, rootEl);
+          break;
+        }
+      }
+    };
+    rootEl.addEventListener('paste', this._pasteHandler);
 
     // Refresh button - sync from TokenConfig's Image Path
     const refreshButton = rootEl.querySelector('.tfl-refresh-button');
@@ -467,6 +632,7 @@ class TokenFramerDialog extends FormApplication {
           return;
         }
         
+        this._clearLocalImage(rootEl);
         const baseImageInput = rootEl.querySelector('input[name="baseImage"]');
         if (baseImageInput) {
           baseImageInput.value = newPath;
@@ -477,11 +643,20 @@ class TokenFramerDialog extends FormApplication {
       });
     }
 
-    // Save Image button - export composited image to file
+    // Save As button - export composited image to user-chosen location
     const saveImageButton = rootEl.querySelector('.tfl-save-image-button');
     if (saveImageButton) {
       saveImageButton.addEventListener('click', async () => {
         await this._saveImageToFile(rootEl);
+      });
+    }
+
+    // Quick Save button - save to preset location and update token image
+    const quickSaveButton = rootEl.querySelector('.tfl-quick-save-button');
+    if (quickSaveButton) {
+      quickSaveButton.addEventListener('click', async (event) => {
+        event.preventDefault();
+        await this._quickSave(rootEl);
       });
     }
 
@@ -545,10 +720,15 @@ class TokenFramerDialog extends FormApplication {
         if (input.name === 'baseImage') {
           if (isFromCache(input.value)) {
             ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.CachedImageWarning'));
-            input.value = this.baseImagePath;
+            input.value = isDataUrl(this.baseImagePath) ? `[Uploaded: ${this._localFileName}]` : this.baseImagePath;
             return;
           }
+          this._clearLocalImage(rootEl);
           this.baseImagePath = input.value;
+        } else if (this._localUploads.has(input.name)) {
+          this._localUploads.delete(input.name);
+          input.readOnly = false;
+          input.title = '';
         }
         this._debouncedPreviewUpdate(rootEl);
       });
@@ -625,6 +805,78 @@ class TokenFramerDialog extends FormApplication {
   }
 
   /**
+   * Set a local image from a File object (upload from PC, drag-drop, paste)
+   */
+  async _setLocalImage(file, rootEl) {
+    if (!file || !file.type.startsWith('image/')) return;
+
+    try {
+      const dataUrl = await readFileAsDataURL(file);
+      this.baseImagePath = dataUrl;
+      this._localFileName = file.name;
+
+      const baseImageInput = rootEl.querySelector('input[name="baseImage"]');
+      if (baseImageInput) {
+        baseImageInput.value = `[Uploaded: ${file.name}]`;
+        baseImageInput.title = file.name;
+        baseImageInput.readOnly = true;
+      }
+      this._debouncedPreviewUpdate(rootEl);
+      debugLog('Local image loaded:', file.name);
+    } catch (err) {
+      console.error(`${MODULE_ID} | Failed to load local image:`, err);
+      ui.notifications.error('Failed to load local image.');
+    }
+  }
+
+  /**
+   * Clear the local image state and restore the input field to editable
+   */
+  _clearLocalImage(rootEl) {
+    this._localFileName = null;
+    const baseImageInput = rootEl.querySelector('input[name="baseImage"]');
+    if (baseImageInput) {
+      baseImageInput.readOnly = false;
+      baseImageInput.title = '';
+    }
+  }
+
+  /**
+   * Set a local upload for a non-base image field (frame, mask, overlay, background)
+   */
+  async _setLocalUpload(fieldName, file, rootEl) {
+    if (!file || !file.type.startsWith('image/')) return;
+    try {
+      const dataUrl = await readFileAsDataURL(file);
+      this._localUploads.set(fieldName, { dataUrl, fileName: file.name });
+
+      const input = rootEl.querySelector(`input[name="${fieldName}"]`);
+      if (input) {
+        input.value = `[Uploaded: ${file.name}]`;
+        input.title = file.name;
+        input.readOnly = true;
+      }
+      this._debouncedPreviewUpdate(rootEl);
+      debugLog(`Local image loaded for ${fieldName}:`, file.name);
+    } catch (err) {
+      console.error(`${MODULE_ID} | Failed to load local image for ${fieldName}:`, err);
+      ui.notifications.error('Failed to load local image.');
+    }
+  }
+
+  /**
+   * Get a filesystem-friendly path for cache key generation.
+   * Returns the local filename if the field has a local upload, otherwise the raw value.
+   */
+  _resolvePathForCacheKey(fieldName, rawValue) {
+    if (fieldName === 'baseImage') {
+      return this._localFileName || rawValue;
+    }
+    const upload = this._localUploads.get(fieldName);
+    return upload ? upload.fileName : rawValue;
+  }
+
+  /**
    * Get the current Image Path from the parent TokenConfig app
    */
   _getTokenConfigImagePath() {
@@ -649,7 +901,11 @@ class TokenFramerDialog extends FormApplication {
    * Gather form data
    */
   _gatherFormData(rootEl) {
-    const getValue = (name) => rootEl.querySelector(`input[name="${name}"]`)?.value ?? '';
+    const getValue = (name) => {
+      const upload = this._localUploads.get(name);
+      if (upload) return upload.dataUrl;
+      return rootEl.querySelector(`input[name="${name}"]`)?.value ?? '';
+    };
     const getSelectValue = (name) => rootEl.querySelector(`select[name="${name}"]`)?.value ?? '';
     const getChecked = (name) => rootEl.querySelector(`input[name="${name}"]`)?.checked ?? false;
     const getNumber = (name, fallback) => parseFloat(getValue(name)) || fallback;
@@ -680,7 +936,11 @@ class TokenFramerDialog extends FormApplication {
       overlayImage: getValue('overlayImage'),
       overlayScale: getNumber('overlayScale', 1.0),
       overlayOffsetX: getInt('overlayOffsetX', 0),
-      overlayOffsetY: getInt('overlayOffsetY', 0)
+      overlayOffsetY: getInt('overlayOffsetY', 0),
+      popOutEnabled: getChecked('popOutEnabled'),
+      popOutDegrees: getInt('popOutDegrees', 180),
+      popOutRotation: getInt('popOutRotation', 0),
+      popOutPreview: getChecked('popOutPreview')
     };
   }
 
@@ -744,6 +1004,7 @@ class TokenFramerDialog extends FormApplication {
    */
   async _saveImageToFile(rootEl) {
     const frameData = this._gatherFormData(rootEl);
+    delete frameData.popOutPreview;
     
     if (!this.baseImagePath) {
       ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.NoBaseImage'));
@@ -768,32 +1029,26 @@ class TokenFramerDialog extends FormApplication {
         return;
       }
 
-      // Convert data URL to blob
-      const response = await fetch(dataUrl);
-      const pngBlob = await response.blob();
-      
-      // Convert PNG to WebP for better compression
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      // Convert to WebP blob for better compression
       const img = new Image();
-      
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
         img.src = dataUrl;
       });
       
+      const canvas = document.createElement('canvas');
       canvas.width = img.width;
       canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
+      canvas.getContext('2d').drawImage(img, 0, 0);
       
       const webpBlob = await new Promise(resolve => {
         canvas.toBlob(resolve, 'image/webp', cacheQuality);
       });
 
-      // Generate a default filename
-      const baseFilename = this.baseImagePath.split('/').pop().replace(/\.[^.]+$/, '');
-      const defaultFilename = `${baseFilename}_token.webp`;
+      const basePath = this._resolvePathForCacheKey('baseImage', this.baseImagePath);
+      const framePath = this._resolvePathForCacheKey('frameImage', frameData.frameImage);
+      const defaultFilename = `${generateCacheKey(basePath, framePath)}.webp`;
 
       // Open FilePicker to let user choose save location
       new foundry.applications.apps.FilePicker.implementation({
@@ -832,10 +1087,150 @@ class TokenFramerDialog extends FormApplication {
   }
 
   /**
+   * Quick Save - save to preset location, update token image, disable auto-framing
+   */
+  async _quickSave(rootEl) {
+    const frameData = this._gatherFormData(rootEl);
+    delete frameData.popOutPreview;
+
+    if (!this.baseImagePath) {
+      ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.NoBaseImage'));
+      return;
+    }
+
+    if (!frameData.frameImage) {
+      ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.NoFrameImage'));
+      return;
+    }
+
+    const cacheResolution = game.settings.get(MODULE_ID, 'cacheResolution') ?? 1000;
+    const cacheQuality = game.settings.get(MODULE_ID, 'cacheQuality') ?? 0.95;
+
+    try {
+      const dataUrl = await generatePreview(this.baseImagePath, frameData, cacheResolution);
+      if (!dataUrl) {
+        ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.SaveImageFailed'));
+        return;
+      }
+
+      // Convert to WebP blob
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+      const cvs = document.createElement('canvas');
+      cvs.width = img.width;
+      cvs.height = img.height;
+      cvs.getContext('2d').drawImage(img, 0, 0);
+      const webpBlob = await new Promise(resolve => {
+        cvs.toBlob(resolve, 'image/webp', cacheQuality);
+      });
+
+      // Build save path
+      let saveFolder = game.settings.get(MODULE_ID, 'quickSaveFolder') || 'assets/tokens';
+      const useSubfolder = game.settings.get(MODULE_ID, 'quickSaveSubfolder') ?? true;
+
+      if (useSubfolder) {
+        const tokenName = this.token.name || this.token.parent?.name || 'unknown';
+        const safeName = tokenName.replace(/[^a-zA-Z0-9 _-]/g, '_').trim();
+        saveFolder = `${saveFolder}/${safeName}`;
+      }
+
+      // Ensure folder exists
+      const FilePicker = foundry.applications.apps.FilePicker.implementation;
+      try {
+        await FilePicker.browse('data', saveFolder);
+      } catch (e) {
+        try {
+          await FilePicker.createDirectory('data', saveFolder);
+        } catch (createErr) {
+          // Try creating parent first if subfolder creation failed
+          const parentFolder = saveFolder.split('/').slice(0, -1).join('/');
+          try {
+            await FilePicker.createDirectory('data', parentFolder);
+            await FilePicker.createDirectory('data', saveFolder);
+          } catch (parentErr) {
+            console.error(`${MODULE_ID} | Failed to create quick save folder:`, parentErr);
+            ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.SaveImageFailed'));
+            return;
+          }
+        }
+      }
+
+      const basePath = this._resolvePathForCacheKey('baseImage', this.baseImagePath);
+      const framePath = this._resolvePathForCacheKey('frameImage', frameData.frameImage);
+      const filename = generateCacheKey(basePath, framePath);
+
+      const file = new File([webpBlob], `${filename}.webp`, { type: 'image/webp' });
+      const uploadResult = await FilePicker.upload('data', saveFolder, file, { notify: false });
+
+      if (!uploadResult?.path) {
+        ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.SaveImageFailed'));
+        return;
+      }
+
+      const savedPath = uploadResult.path;
+      debugLog('Quick Save: image saved to', savedPath);
+
+      // Update the token's image and clear Token Framer data
+      const placedToken = canvas.tokens?.get(this.token.id);
+
+      if (placedToken) {
+        await placedToken.document.update({
+          'texture.src': savedPath,
+          [`flags.${MODULE_ID}.-=frameData`]: null,
+          [`flags.${MODULE_ID}.-=originalImage`]: null,
+          [`flags.${MODULE_ID}.-=currentCacheKey`]: null,
+          [`flags.${MODULE_ID}.-=cachedFramePath`]: null
+        });
+      } else {
+        // Prototype token
+        const actor = game.actors.get(this.token.actorId) || this.token.actor;
+        if (actor) {
+          if (this.tokenConfigApp) {
+            // Token Config is open - use pending data pattern
+            PENDING_PROTOTYPE_DATA.set(actor.id, {
+              restore: true,
+              originalImage: savedPath
+            });
+            this._updateTokenConfigImagePath(savedPath);
+
+            const appElement = this.tokenConfigApp.element instanceof jQuery
+              ? this.tokenConfigApp.element[0]
+              : this.tokenConfigApp.element;
+            if (appElement) {
+              const enableCheckbox = appElement.querySelector(`input[name="flags.${MODULE_ID}.frameData.enabled"]`);
+              if (enableCheckbox) enableCheckbox.checked = false;
+            }
+          } else {
+            // No Token Config open - update actor directly
+            await actor.update({
+              'prototypeToken.texture.src': savedPath,
+              [`prototypeToken.flags.${MODULE_ID}.-=frameData`]: null,
+              [`prototypeToken.flags.${MODULE_ID}.-=originalImage`]: null,
+              [`prototypeToken.flags.${MODULE_ID}.-=currentCacheKey`]: null,
+              [`prototypeToken.flags.${MODULE_ID}.-=cachedFramePath`]: null
+            });
+          }
+        }
+      }
+
+      ui.notifications.info(game.i18n.format('TOKEN-FRAMER.Notifications.QuickSaved', { path: savedPath }));
+
+    } catch (err) {
+      console.error(`${MODULE_ID} | Quick Save failed:`, err);
+      ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.SaveImageFailed'));
+    }
+  }
+
+  /**
    * Apply the frame to the token
    */
   async _applyFrame(rootEl) {
     const formData = this._gatherFormData(rootEl);
+    delete formData.popOutPreview;
     
     if (!this.baseImagePath) {
       ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.NoBaseImage'));
@@ -844,6 +1239,11 @@ class TokenFramerDialog extends FormApplication {
     
     if (!formData.frameImage) {
       ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.NoFrameImage'));
+      return;
+    }
+
+    if (isDataUrl(this.baseImagePath) || this._localUploads.size > 0) {
+      ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.LocalImageAutoFrame'));
       return;
     }
 
@@ -857,25 +1257,22 @@ class TokenFramerDialog extends FormApplication {
       debugLog('Frame applied to placed token:', placedToken.name);
       ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Notifications.FrameApplied'));
     } else {
-      // Prototype token - store pending data to be merged when form is submitted
+      // Prototype token
       const actor = game.actors.get(this.token.actorId) || this.token.actor;
       
       if (actor) {
         const cachedPath = await generateFrameForPrototype(this.baseImagePath, formData);
         
         if (cachedPath) {
-          // Store pending data - will be merged in preUpdateActor hook
-          PENDING_PROTOTYPE_DATA.set(actor.id, {
-            cachedPath: cachedPath,
-            frameData: formData,
-            originalImage: this.baseImagePath
-          });
-          
-          // Update the visible Image Path field so user sees the change
-          this._updateTokenConfigImagePath(cachedPath);
-          
-          // Check the enable checkbox if not already checked
           if (this.tokenConfigApp) {
+            // Token Config is open - use pending data pattern to avoid form state issues
+            PENDING_PROTOTYPE_DATA.set(actor.id, {
+              cachedPath: cachedPath,
+              frameData: formData,
+              originalImage: this.baseImagePath
+            });
+            this._updateTokenConfigImagePath(cachedPath);
+            
             const appElement = this.tokenConfigApp.element instanceof jQuery 
               ? this.tokenConfigApp.element[0] 
               : this.tokenConfigApp.element;
@@ -885,10 +1282,21 @@ class TokenFramerDialog extends FormApplication {
                 enableCheckbox.checked = true;
               }
             }
+            debugLog('Prototype token: Frame generated, pending data stored for actor:', actor.id);
+            ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Notifications.FrameGenerated'));
+          } else {
+            // No Token Config open (opened from header button) - update actor directly
+            const cacheKey = cachedPath.split('/').pop().replace('.webp', '').split('?')[0];
+            await actor.update({
+              'prototypeToken.texture.src': cachedPath,
+              [`prototypeToken.flags.${MODULE_ID}.frameData`]: formData,
+              [`prototypeToken.flags.${MODULE_ID}.originalImage`]: this.baseImagePath,
+              [`prototypeToken.flags.${MODULE_ID}.cachedFramePath`]: cachedPath,
+              [`prototypeToken.flags.${MODULE_ID}.currentCacheKey`]: cacheKey
+            });
+            debugLog('Prototype token: Frame applied directly to actor:', actor.name);
+            ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Notifications.FrameApplied'));
           }
-          
-          debugLog('Prototype token: Frame generated, pending data stored for actor:', actor.id);
-          ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Notifications.FrameGenerated'));
         }
       }
     }
@@ -907,36 +1315,40 @@ class TokenFramerDialog extends FormApplication {
       await restoreOriginalImage(placedToken);
       ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Notifications.FrameRemoved'));
     } else {
-      // Prototype token - store pending restore data
+      // Prototype token
       const actor = game.actors.get(this.token.actorId) || this.token.actor;
       const originalImagePath = await this.token.getFlag(MODULE_ID, 'originalImage') || this.baseImagePath;
       
       if (actor && originalImagePath) {
-        // Store pending restore - will be processed in preUpdateActor hook
-        PENDING_PROTOTYPE_DATA.set(actor.id, {
-          restore: true,
-          originalImage: originalImagePath
-        });
-        
-        // Update the Image Path field to the original
-        this._updateTokenConfigImagePath(originalImagePath);
-        
-        // Uncheck the enable checkbox
         if (this.tokenConfigApp) {
+          // Token Config is open - use pending data pattern
+          PENDING_PROTOTYPE_DATA.set(actor.id, {
+            restore: true,
+            originalImage: originalImagePath
+          });
+          this._updateTokenConfigImagePath(originalImagePath);
+          
           const appElement = this.tokenConfigApp.element instanceof jQuery 
             ? this.tokenConfigApp.element[0] 
             : this.tokenConfigApp.element;
-          
           if (appElement) {
             const enableCheckbox = appElement.querySelector(`input[name="flags.${MODULE_ID}.frameData.enabled"]`);
-            if (enableCheckbox) {
-              enableCheckbox.checked = false;
-            }
+            if (enableCheckbox) enableCheckbox.checked = false;
           }
+          debugLog('Prototype token: Restore prepared, will apply on form submit');
+          ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Notifications.FrameWillBeRemoved'));
+        } else {
+          // No Token Config open - update actor directly
+          await actor.update({
+            'prototypeToken.texture.src': originalImagePath,
+            [`prototypeToken.flags.${MODULE_ID}.-=frameData`]: null,
+            [`prototypeToken.flags.${MODULE_ID}.-=originalImage`]: null,
+            [`prototypeToken.flags.${MODULE_ID}.-=currentCacheKey`]: null,
+            [`prototypeToken.flags.${MODULE_ID}.-=cachedFramePath`]: null
+          });
+          debugLog('Prototype token: Restored directly on actor:', actor.name);
+          ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Notifications.FrameRemoved'));
         }
-        
-        debugLog('Prototype token: Restore prepared, will apply on form submit');
-        ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Notifications.FrameWillBeRemoved'));
       }
     }
     

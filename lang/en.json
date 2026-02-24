@@ -9,7 +9,9 @@
       "FrameWillBeRemoved": "Frame will be removed. Click 'Update Token' to save changes.",
       "NoBaseImage": "Please set a base image first.",
       "NoFrameImage": "Please set a frame image first.",
+      "LocalImageAutoFrame": "Auto-Frame requires a server image. Use Save As or Quick Save for uploaded images.",
       "ImageSaved": "Image saved to: {path}",
+      "QuickSaved": "Token saved to: {path}",
       "SaveImageFailed": "Failed to save image. Check console for details."
     },
     "Settings": {
@@ -54,18 +56,34 @@
         "Name": "Default Overlay Scale",
         "Hint": "Default scale for the overlay/decoration image (0.5 to 1.5)."
       },
+      "DefaultPopOutDegrees": {
+        "Name": "Default Pop Out Arc",
+        "Hint": "Default arc size in degrees for the pop-out effect (1 to 360)."
+      },
+      "DefaultPopOutRotation": {
+        "Name": "Default Pop Out Rotation",
+        "Hint": "Default rotation for the pop-out effect (-180 to 180). 0 = top."
+      },
       "DefaultBgImageScale": {
         "Name": "Default Background Image Scale",
         "Hint": "Default scale for the background image (0.5 to 1.5)."
+      },
+      "QuickSaveFolder": {
+        "Name": "Quick Save Folder",
+        "Hint": "Folder for Quick Save images. Default: assets/tokens."
+      },
+      "QuickSaveSubfolder": {
+        "Name": "Quick Save: Use Token Name Subfolder",
+        "Hint": "Create a subfolder named after the token/actor inside the Quick Save folder."
       }
     },
     "Config": {
-      "Title": "Token Frame",
-      "DialogTitle": "Token Frame Settings",
+      "Title": "Auto-Frame",
+      "DialogTitle": "Token Framer",
       "Enable": "Enable",
       "EnableHint": "Apply a frame overlay to this token.",
       "ConfigureFrame": "Configure",
-      "ControlsHint": "Enable to auto-apply frames to this token. Click Configure to customize frame settings.",
+      "ControlsHint": "Enable to automatically frame this token when art is swapped. Click Configure to customize.",
       "Background": "Background",
       "BackgroundEnable": "Enable Color",
       "BackgroundColor": "Color",
@@ -81,11 +99,13 @@
       "OverlayScale": "Overlay Scale",
       "OverlayOffset": "Overlay Offset",
       "BaseImage": "Base Image",
-      "BaseImageInputHint": "The token image before framing. Use the button below the preview to sync from Image Path.",
+      "BaseImageInputHint": "The token image before framing. You can also upload from your computer, drag-and-drop, or paste an image.",
       "FrameImage": "Frame Image",
       "FrameImageHint": "Path to the frame overlay image (PNG, WEBP recommended).",
       "AutoCircular": "Auto (circular)",
       "BrowseFiles": "Browse Files",
+      "UploadFromPC": "Upload from your computer",
+      "DropImage": "Drop image here",
       "Clear": "Clear",
       "BaseImageSettings": "Base Image Settings",
       "BaseScale": "Base Scale",
@@ -120,10 +140,23 @@
       "Refresh": "Refresh",
       "RefreshHint": "Sync base image from the token's Image Path field",
       "RefreshFromToken": "Sync Base Image from Image Path",
-      "SaveImage": "Save image as new file",
-      "SaveImageHint": "Save the composited image to a file on the server",
-      "ApplyFrame": "Apply Frame",
-      "RestoreOriginal": "Remove Frame",
+      "SaveAs": "Save As...",
+      "SaveAsHint": "Save the composited image to a location you choose.",
+      "QuickSave": "Quick Save",
+      "QuickSaveHint": "Save image to the preset folder, set it as the token's image, and disable auto-framing.",
+      "PopOut": "Pop Out",
+      "PopOutEnable": "Enable Pop Out",
+      "PopOutHint": "Draws part of the base image above the frame, creating a 'pop out' effect. Works best with transparent-background base images.",
+      "PopOutDegrees": "Pop Out Arc",
+      "PopOutDegreesHint": "Size of the pop-out area in degrees (1-360). Larger values reveal more of the image above the frame.",
+      "PopOutPreview": "Show Preview Highlight",
+      "PopOutPreviewHint": "Highlights the pop-out area in yellow on the preview so you can see the wedge while adjusting.",
+      "PopOutRotation": "Pop Out Rotation",
+      "PopOutRotationHint": "Rotates the pop-out area. Negative = counter-clockwise, positive = clockwise. 0 = centered at top.",
+      "ApplyAutoFrame": "Apply Auto-Frame",
+      "ApplyAutoFrameHint": "Enable Token Framer to manage this token. Auto-frames when art is swapped.",
+      "RestoreOriginal": "Reset to Original",
+      "ResetHint": "Remove the frame and restore the original token image.",
       "PrototypeWarning": "If editing a Prototype Token for the first time, click Apply Frame."
     }
   }

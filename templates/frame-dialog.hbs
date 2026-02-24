@@ -4,7 +4,7 @@
     <!-- Left Column: Preview -->
     <div class="tfl-preview-section">
       <label>{{localize "TOKEN-FRAMER.Config.Preview"}}</label>
-      <div class="tfl-preview-wrapper">
+      <div class="tfl-preview-wrapper" data-drop-target="base">
         <div class="tfl-preview-placeholder">
           <i class="fas fa-image"></i>
           <span>{{localize "TOKEN-FRAMER.Config.PreviewPlaceholder"}}</span>
@@ -12,15 +12,19 @@
         <div class="tfl-preview-loading">
           <i class="fas fa-spinner fa-spin"></i>
         </div>
+        <div class="tfl-drop-overlay">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <span>{{localize "TOKEN-FRAMER.Config.DropImage"}}</span>
+        </div>
         <img class="tfl-preview-image" src="" alt="{{localize 'TOKEN-FRAMER.Config.Preview'}}">
       </div>
       <button type="button" class="tfl-refresh-button" title="{{localize 'TOKEN-FRAMER.Config.RefreshHint'}}">
         <i class="fas fa-sync-alt"></i>
         {{localize "TOKEN-FRAMER.Config.RefreshFromToken"}}
       </button>
-      <button type="button" class="tfl-save-image-button" title="{{localize 'TOKEN-FRAMER.Config.SaveImageHint'}}">
-        <i class="fas fa-download"></i>
-        {{localize "TOKEN-FRAMER.Config.SaveImage"}}
+      <button type="button" class="tfl-restore-button tfl-preview-action" title="{{localize 'TOKEN-FRAMER.Config.ResetHint'}}">
+        <i class="fas fa-undo"></i>
+        {{localize "TOKEN-FRAMER.Config.RestoreOriginal"}}
       </button>
     </div>
 
@@ -35,6 +39,9 @@
           <button type="button" class="tfl-icon-button tfl-file-picker" data-target="baseImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
             <i class="fas fa-file-import"></i>
           </button>
+          <button type="button" class="tfl-icon-button tfl-upload-button" data-target="baseImage" title="{{localize 'TOKEN-FRAMER.Config.UploadFromPC'}}">
+            <i class="fas fa-upload"></i>
+          </button>
         </div>
         <p class="hint">{{localize "TOKEN-FRAMER.Config.BaseImageInputHint"}}</p>
       </div>
@@ -46,6 +53,9 @@
           <input type="text" name="frameImage" value="{{frameImage}}" placeholder="path/to/frame.webp">
           <button type="button" class="tfl-icon-button tfl-file-picker" data-target="frameImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
             <i class="fas fa-file-import"></i>
+          </button>
+          <button type="button" class="tfl-icon-button tfl-upload-button" data-target="frameImage" title="{{localize 'TOKEN-FRAMER.Config.UploadFromPC'}}">
+            <i class="fas fa-upload"></i>
           </button>
         </div>
       </div>
@@ -140,6 +150,9 @@
               <button type="button" class="tfl-icon-button tfl-file-picker" data-target="maskImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
                 <i class="fas fa-file-import"></i>
               </button>
+              <button type="button" class="tfl-icon-button tfl-upload-button" data-target="maskImage" title="{{localize 'TOKEN-FRAMER.Config.UploadFromPC'}}">
+                <i class="fas fa-upload"></i>
+              </button>
             </div>
             <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskImageHint"}}</p>
           </div>
@@ -179,6 +192,9 @@
               <button type="button" class="tfl-icon-button tfl-file-picker" data-target="overlayImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
                 <i class="fas fa-file-import"></i>
               </button>
+              <button type="button" class="tfl-icon-button tfl-upload-button" data-target="overlayImage" title="{{localize 'TOKEN-FRAMER.Config.UploadFromPC'}}">
+                <i class="fas fa-upload"></i>
+              </button>
             </div>
             <p class="hint">{{localize "TOKEN-FRAMER.Config.OverlayHint"}}</p>
           </div>
@@ -199,6 +215,49 @@
               <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
               <input type="number" name="overlayOffsetY" value="{{overlayOffsetY}}" step="1" placeholder="0">
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pop Out Settings -->
+      <div class="tfl-collapsible" data-collapsed="true">
+        <div class="tfl-collapsible-header">
+          <i class="fas fa-chevron-down tfl-collapse-icon"></i>
+          <label>{{localize "TOKEN-FRAMER.Config.PopOut"}}</label>
+        </div>
+        <div class="tfl-collapsible-content">
+          <div class="tfl-form-group tfl-toggle-row">
+            <div class="tfl-toggle-option">
+              <input type="checkbox" name="popOutEnabled" id="tfl-pop-out-enabled" {{popOutEnabled}}>
+              <label for="tfl-pop-out-enabled">{{localize "TOKEN-FRAMER.Config.PopOutEnable"}}</label>
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.PopOutHint"}}</p>
+          </div>
+
+          <div class="tfl-form-group tfl-toggle-row">
+            <div class="tfl-toggle-option">
+              <input type="checkbox" name="popOutPreview" id="tfl-pop-out-preview">
+              <label for="tfl-pop-out-preview">{{localize "TOKEN-FRAMER.Config.PopOutPreview"}}</label>
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.PopOutPreviewHint"}}</p>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.PopOutDegrees"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="popOutDegrees" value="{{popOutDegrees}}" min="1" max="360" step="1">
+              <input type="number" class="range-value" data-for="popOutDegrees" value="{{popOutDegrees}}" min="1" max="360" step="1">
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.PopOutDegreesHint"}}</p>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.PopOutRotation"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="popOutRotation" value="{{popOutRotation}}" min="-180" max="180" step="1">
+              <input type="number" class="range-value" data-for="popOutRotation" value="{{popOutRotation}}" min="-180" max="180" step="1">
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.PopOutRotationHint"}}</p>
           </div>
         </div>
       </div>
@@ -229,6 +288,9 @@
               <button type="button" class="tfl-icon-button tfl-file-picker" data-target="bgImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
                 <i class="fas fa-file-import"></i>
               </button>
+              <button type="button" class="tfl-icon-button tfl-upload-button" data-target="bgImage" title="{{localize 'TOKEN-FRAMER.Config.UploadFromPC'}}">
+                <i class="fas fa-upload"></i>
+              </button>
             </div>
           </div>
 
@@ -257,13 +319,17 @@
 
   <!-- Footer Actions -->
   <footer class="tfl-dialog-footer">
-    <button type="button" class="tfl-restore-button">
-      <i class="fas fa-undo"></i>
-      {{localize "TOKEN-FRAMER.Config.RestoreOriginal"}}
+    <button type="button" class="tfl-save-image-button" title="{{localize 'TOKEN-FRAMER.Config.SaveAsHint'}}">
+      <i class="fas fa-file-export"></i>
+      {{localize "TOKEN-FRAMER.Config.SaveAs"}}
     </button>
-    <button type="button" class="tfl-apply-button">
-      <i class="fas fa-check"></i>
-      {{localize "TOKEN-FRAMER.Config.ApplyFrame"}}
+    <button type="button" class="tfl-quick-save-button" title="{{localize 'TOKEN-FRAMER.Config.QuickSaveHint'}}">
+      <i class="fas fa-bolt"></i>
+      {{localize "TOKEN-FRAMER.Config.QuickSave"}}
+    </button>
+    <button type="button" class="tfl-apply-button" title="{{localize 'TOKEN-FRAMER.Config.ApplyAutoFrameHint'}}">
+      <i class="fas fa-magic"></i>
+      {{localize "TOKEN-FRAMER.Config.ApplyAutoFrame"}}
     </button>
   </footer>
 </form>

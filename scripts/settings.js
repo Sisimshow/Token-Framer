@@ -30,6 +30,27 @@ export function registerSettings() {
     filePicker: 'imagevideo'
   });
 
+  // Quick Save folder
+  game.settings.register(MODULE_ID, 'quickSaveFolder', {
+    name: 'TOKEN-FRAMER.Settings.QuickSaveFolder.Name',
+    hint: 'TOKEN-FRAMER.Settings.QuickSaveFolder.Hint',
+    scope: 'world',
+    config: true,
+    type: String,
+    default: 'assets/tokens',
+    filePicker: 'folder'
+  });
+
+  // Quick Save - use token name subfolder
+  game.settings.register(MODULE_ID, 'quickSaveSubfolder', {
+    name: 'TOKEN-FRAMER.Settings.QuickSaveSubfolder.Name',
+    hint: 'TOKEN-FRAMER.Settings.QuickSaveSubfolder.Hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true
+  });
+
   // Cache folder location
   game.settings.register(MODULE_ID, 'cacheFolder', {
     name: 'TOKEN-FRAMER.Settings.CacheFolder.Name',
@@ -124,6 +145,36 @@ export function registerSettings() {
       step: 0.05
     },
     default: 1.0
+  });
+
+  // Default pop-out arc
+  game.settings.register(MODULE_ID, 'defaultPopOutDegrees', {
+    name: 'TOKEN-FRAMER.Settings.DefaultPopOutDegrees.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultPopOutDegrees.Hint',
+    scope: 'world',
+    config: true,
+    type: Number,
+    range: {
+      min: 1,
+      max: 360,
+      step: 1
+    },
+    default: 180
+  });
+
+  // Default pop-out rotation
+  game.settings.register(MODULE_ID, 'defaultPopOutRotation', {
+    name: 'TOKEN-FRAMER.Settings.DefaultPopOutRotation.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultPopOutRotation.Hint',
+    scope: 'world',
+    config: true,
+    type: Number,
+    range: {
+      min: -180,
+      max: 180,
+      step: 1
+    },
+    default: 0
   });
 
   // Default background image scale
