@@ -184,7 +184,8 @@ async function compositeImage(baseImagePath, frameData, size = 1000, quality = 0
     bgEnabled = false, bgColor = '#000000',
     bgImage = '', bgImageScale = 1.0, bgImageOffsetX = 0, bgImageOffsetY = 0,
     overlayImage = '', overlayScale = 1.0, overlayOffsetX = 0, overlayOffsetY = 0,
-    popOutEnabled = false, popOutDegrees = 180, popOutRotation = 0
+    popOutEnabled = false, popOutDegrees = 180, popOutRotation = 0,
+    popOutOffsetX = 0, popOutOffsetY = 0
   } = frameData;
 
   const canvas = document.createElement('canvas');
@@ -307,11 +308,12 @@ async function compositeImage(baseImagePath, frameData, size = 1000, quality = 0
     if (!popOutEnabled || popOutDegrees <= 0) return;
     ctx.save();
     const halfAngle = (popOutDegrees / 2) * Math.PI / 180;
-    // -90° offset so 0° rotation = top (12 o'clock)
     const centerAngle = (popOutRotation - 90) * Math.PI / 180;
+    const popCenterX = centerX + popOutOffsetX;
+    const popCenterY = centerY + popOutOffsetY;
     ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.arc(centerX, centerY, size, centerAngle - halfAngle, centerAngle + halfAngle);
+    ctx.moveTo(popCenterX, popCenterY);
+    ctx.arc(popCenterX, popCenterY, size, centerAngle - halfAngle, centerAngle + halfAngle);
     ctx.closePath();
     ctx.clip();
     ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
@@ -524,24 +526,23 @@ export async function generateFrameForPrototype(baseImagePath, frameData) {
  */
 export async function regenerateAllFrames() {
   const confirm = await Dialog.confirm({
-    title: "Regenerate All Frames",
-    content: "<p>This will scan all Actors and Tokens in your world. If they have Token Framer settings, it will regenerate their cached images.<br><br><strong>Use this after manually emptying your cache folder to fix broken images.</strong></p>"
+    title: game.i18n.localize('TOKEN-FRAMER.Settings.Regenerate.Name'),
+    content: `<p>${game.i18n.localize('TOKEN-FRAMER.Settings.Regenerate.ConfirmContent')}</p>`
   });
 
   if (!confirm) return;
 
-  // 1. Counters for the progress notification
   let count = 0;
   const actors = game.actors.filter(a => a.prototypeToken.flags?.[MODULE_ID]?.frameData?.enabled);
   const scenes = game.scenes.map(s => s.tokens.filter(t => t.flags?.[MODULE_ID]?.frameData?.enabled)).flat();
   const total = actors.length + scenes.length;
 
   if (total === 0) {
-    ui.notifications.info("No framed tokens found to regenerate.");
+    ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Notifications.NoFramedTokens'));
     return;
   }
 
-  ui.notifications.info(`Starting regeneration of ${total} tokens... check console for details.`);
+  ui.notifications.info(game.i18n.format('TOKEN-FRAMER.Notifications.RegenerateStart', { total }));
   console.log(`${MODULE_ID} | Starting Mass Regeneration`);
 
   // 2. Process Actors (Prototype Tokens)
@@ -597,5 +598,5 @@ export async function regenerateAllFrames() {
     count++;
   }
 
-  ui.notifications.info(`${MODULE_ID} | Regeneration Complete! Processed ${count} assets.`);
+  ui.notifications.info(game.i18n.format('TOKEN-FRAMER.Notifications.RegenerateComplete', { count }));
 }

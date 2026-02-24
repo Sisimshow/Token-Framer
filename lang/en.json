@@ -12,13 +12,18 @@
       "LocalImageAutoFrame": "Auto-Frame requires a server image. Use Save As or Quick Save for uploaded images.",
       "ImageSaved": "Image saved to: {path}",
       "QuickSaved": "Token saved to: {path}",
-      "SaveImageFailed": "Failed to save image. Check console for details."
+      "SaveImageFailed": "Failed to save image. Check console for details.",
+      "LocalImageFailed": "Failed to load local image.",
+      "NoFramedTokens": "No framed tokens found to regenerate.",
+      "RegenerateStart": "Starting regeneration of {total} tokens... check console for details.",
+      "RegenerateComplete": "Regeneration complete! Processed {count} assets."
     },
     "Settings": {
       "Regenerate": {
         "Name": "Regenerate Cache",
         "Label": "Regenerate Cache",
-        "Hint": "Regenerate the token frame cache for all actors and tokens in the loaded world."
+        "Hint": "Regenerate the token frame cache for all actors and tokens in the loaded world.",
+        "ConfirmContent": "This will scan all Actors and Tokens in your world. If they have Token Framer settings, it will regenerate their cached images.<br><br><strong>Use this after manually emptying your cache folder to fix broken images.</strong>"
       },
       "DefaultFrameImage": {
         "Name": "Default Frame Image",
@@ -99,7 +104,7 @@
       "OverlayScale": "Overlay Scale",
       "OverlayOffset": "Overlay Offset",
       "BaseImage": "Base Image",
-      "BaseImageInputHint": "The token image before framing. You can also upload from your computer, drag-and-drop, or paste an image.",
+      "BaseImageInputHint": "The original token image before framing. Choose a server file, or upload, paste, or drag in a local image directly from your computer. Note - local images cannot be used with Auto-Frame.",
       "FrameImage": "Frame Image",
       "FrameImageHint": "Path to the frame overlay image (PNG, WEBP recommended).",
       "AutoCircular": "Auto (circular)",
@@ -144,6 +149,7 @@
       "SaveAsHint": "Save the composited image to a location you choose.",
       "QuickSave": "Quick Save",
       "QuickSaveHint": "Save image to the preset folder, set it as the token's image, and disable auto-framing.",
+      "QuickSaveDisabledHint": "Disable Auto-Frame first to use Quick Save.",
       "PopOut": "Pop Out",
       "PopOutEnable": "Enable Pop Out",
       "PopOutHint": "Draws part of the base image above the frame, creating a 'pop out' effect. Works best with transparent-background base images.",
@@ -153,6 +159,8 @@
       "PopOutPreviewHint": "Highlights the pop-out area in yellow on the preview so you can see the wedge while adjusting.",
       "PopOutRotation": "Pop Out Rotation",
       "PopOutRotationHint": "Rotates the pop-out area. Negative = counter-clockwise, positive = clockwise. 0 = centered at top.",
+      "PopOutOffset": "Pop Out Offset",
+      "AutoFrameActive": "Auto-Frame is enabled for this token",
       "ApplyAutoFrame": "Apply Auto-Frame",
       "ApplyAutoFrameHint": "Enable Token Framer to manage this token. Auto-frames when art is swapped.",
       "RestoreOriginal": "Reset to Original",

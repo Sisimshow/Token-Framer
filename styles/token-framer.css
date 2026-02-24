@@ -267,6 +267,25 @@
   color: var(--color-light-1, #ffffff);
 }
 
+/* Auto-Frame Active Badge */
+.tfl-auto-frame-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid rgba(50, 140, 50, 0.5);
+  border-radius: 4px;
+  background: rgba(50, 140, 50, 0.15);
+  color: rgba(130, 220, 130, 0.9);
+  font-size: var(--font-size-12);
+  font-weight: 600;
+}
+
+.tfl-auto-frame-badge i {
+  font-size: var(--font-size-14);
+}
+
 /* Right Column: Settings */
 .tfl-settings-section {
   flex: 1;
@@ -651,9 +670,14 @@
   border-color: rgba(50, 120, 180, 0.4);
 }
 
-.tfl-dialog-footer .tfl-quick-save-button:hover {
+.tfl-dialog-footer .tfl-quick-save-button:hover:not(:disabled) {
   background: rgba(50, 120, 180, 0.4);
   border-color: rgba(50, 120, 180, 0.6);
+}
+
+.tfl-dialog-footer .tfl-quick-save-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .tfl-dialog-footer .tfl-apply-button {

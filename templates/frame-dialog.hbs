@@ -30,6 +30,13 @@
 
     <!-- Right Column: Settings -->
     <div class="tfl-settings-section">
+
+      {{#if autoFrameEnabled}}
+      <div class="tfl-auto-frame-badge">
+        <i class="fas fa-magic"></i>
+        {{localize "TOKEN-FRAMER.Config.AutoFrameActive"}}
+      </div>
+      {{/if}}
       
       <!-- Base Image -->
       <div class="tfl-form-group">
@@ -259,6 +266,16 @@
             </div>
             <p class="hint">{{localize "TOKEN-FRAMER.Config.PopOutRotationHint"}}</p>
           </div>
+
+          <div class="tfl-form-group tfl-offset-group">
+            <label>{{localize "TOKEN-FRAMER.Config.PopOutOffset"}}</label>
+            <div class="tfl-form-fields">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+              <input type="number" name="popOutOffsetX" value="{{popOutOffsetX}}" step="1" placeholder="0">
+              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+              <input type="number" name="popOutOffsetY" value="{{popOutOffsetY}}" step="1" placeholder="0">
+            </div>
+          </div>
         </div>
       </div>
 
@@ -323,7 +340,7 @@
       <i class="fas fa-file-export"></i>
       {{localize "TOKEN-FRAMER.Config.SaveAs"}}
     </button>
-    <button type="button" class="tfl-quick-save-button" title="{{localize 'TOKEN-FRAMER.Config.QuickSaveHint'}}">
+    <button type="button" class="tfl-quick-save-button" title="{{#if autoFrameEnabled}}{{localize 'TOKEN-FRAMER.Config.QuickSaveDisabledHint'}}{{else}}{{localize 'TOKEN-FRAMER.Config.QuickSaveHint'}}{{/if}}" {{#if autoFrameEnabled}}disabled{{/if}}>
       <i class="fas fa-bolt"></i>
       {{localize "TOKEN-FRAMER.Config.QuickSave"}}
     </button>

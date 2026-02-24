@@ -76,7 +76,10 @@ Token Framer supports two main workflows:
 - Use Token Framer as a token composer to create a finished image
 - Quick Save exports the image and updates the token in one click
 - The resulting image file is independent of Token Framer — auto-framing is disabled
+- Quick Save is disabled when Auto-Frame is active — disable Auto-Frame first or use Reset to Original
 - Files saved this way end with `_token` in the filename, which auto-framing recognizes and skips
+
+When Auto-Frame is enabled for a token, a green indicator badge is shown at the top of the Token Framer dialog.
 
 ### Settings Reference
 
@@ -99,6 +102,7 @@ Token Framer supports two main workflows:
 | **Pop Out Enable** | Enable the pop-out effect |
 | **Pop Out Arc** | Size of the pop-out area in degrees (1 - 360) |
 | **Pop Out Rotation** | Rotation of the pop-out area (-180 to 180, 0 = top) |
+| **Pop Out Offset** | Pixel offset for the center of the pop-out wedge |
 | **Pop Out Preview** | Highlight the pop-out area in yellow on the preview |
 | **Background Enable** | Enable a solid color background |
 | **Background Color** | Color for the solid background |

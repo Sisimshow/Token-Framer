@@ -204,7 +204,9 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
     overlayOffsetY = 0,
     popOutEnabled = false,
     popOutDegrees = 180,
-    popOutRotation = 0
+    popOutRotation = 0,
+    popOutOffsetX = 0,
+    popOutOffsetY = 0
   } = frameData;
 
   if (!baseImagePath || !frameImage) {
@@ -239,6 +241,8 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
     const scaledMaskOffsetY = maskOffsetY * offsetScale;
     const scaledFrameOffsetX = frameOffsetX * offsetScale;
     const scaledFrameOffsetY = frameOffsetY * offsetScale;
+    const scaledPopOutOffsetX = popOutOffsetX * offsetScale;
+    const scaledPopOutOffsetY = popOutOffsetY * offsetScale;
     
     if (baseAspect >= 1) {
       baseDrawHeight = size * baseScale;
@@ -363,9 +367,11 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
       ctx.save();
       const halfAngle = (popOutDegrees / 2) * Math.PI / 180;
       const centerAngle = (popOutRotation - 90) * Math.PI / 180;
+      const popCenterX = centerX + scaledPopOutOffsetX;
+      const popCenterY = centerY + scaledPopOutOffsetY;
       ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, size, centerAngle - halfAngle, centerAngle + halfAngle);
+      ctx.moveTo(popCenterX, popCenterY);
+      ctx.arc(popCenterX, popCenterY, size, centerAngle - halfAngle, centerAngle + halfAngle);
       ctx.closePath();
       ctx.clip();
       ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
@@ -389,9 +395,11 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
       ctx.save();
       const halfAngle = (popOutDegrees / 2) * Math.PI / 180;
       const centerAngle = (popOutRotation - 90) * Math.PI / 180;
+      const popCenterX = centerX + scaledPopOutOffsetX;
+      const popCenterY = centerY + scaledPopOutOffsetY;
       ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, size, centerAngle - halfAngle, centerAngle + halfAngle);
+      ctx.moveTo(popCenterX, popCenterY);
+      ctx.arc(popCenterX, popCenterY, size, centerAngle - halfAngle, centerAngle + halfAngle);
       ctx.closePath();
       ctx.fillStyle = 'rgba(255, 220, 50, 0.25)';
       ctx.fill();
@@ -498,7 +506,10 @@ class TokenFramerDialog extends FormApplication {
       overlayOffsetY: frameData.overlayOffsetY ?? 0,
       popOutEnabled: frameData.popOutEnabled ? 'checked' : '',
       popOutDegrees: frameData.popOutDegrees ?? defaults.popOutDegrees,
-      popOutRotation: frameData.popOutRotation ?? defaults.popOutRotation
+      popOutRotation: frameData.popOutRotation ?? defaults.popOutRotation,
+      popOutOffsetX: frameData.popOutOffsetX ?? 0,
+      popOutOffsetY: frameData.popOutOffsetY ?? 0,
+      autoFrameEnabled: frameData.enabled ? true : false
     };
   }
 
@@ -825,7 +836,7 @@ class TokenFramerDialog extends FormApplication {
       debugLog('Local image loaded:', file.name);
     } catch (err) {
       console.error(`${MODULE_ID} | Failed to load local image:`, err);
-      ui.notifications.error('Failed to load local image.');
+      ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.LocalImageFailed'));
     }
   }
 
@@ -860,7 +871,7 @@ class TokenFramerDialog extends FormApplication {
       debugLog(`Local image loaded for ${fieldName}:`, file.name);
     } catch (err) {
       console.error(`${MODULE_ID} | Failed to load local image for ${fieldName}:`, err);
-      ui.notifications.error('Failed to load local image.');
+      ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.LocalImageFailed'));
     }
   }
 
@@ -940,6 +951,8 @@ class TokenFramerDialog extends FormApplication {
       popOutEnabled: getChecked('popOutEnabled'),
       popOutDegrees: getInt('popOutDegrees', 180),
       popOutRotation: getInt('popOutRotation', 0),
+      popOutOffsetX: getInt('popOutOffsetX', 0),
+      popOutOffsetY: getInt('popOutOffsetY', 0),
       popOutPreview: getChecked('popOutPreview')
     };
   }
@@ -1218,6 +1231,7 @@ class TokenFramerDialog extends FormApplication {
       }
 
       ui.notifications.info(game.i18n.format('TOKEN-FRAMER.Notifications.QuickSaved', { path: savedPath }));
+      this.close();
 
     } catch (err) {
       console.error(`${MODULE_ID} | Quick Save failed:`, err);
