@@ -92,7 +92,6 @@
       "Background": "Background",
       "BackgroundEnable": "Enable Color",
       "BackgroundColor": "Color",
-      "BackgroundHint": "Use color picker on the preview to sample colors.",
       "BackgroundImage": "Background Image",
       "BackgroundImagePlaceholder": "Optional background image",
       "BackgroundImageScale": "Background Scale",
@@ -107,11 +106,9 @@
       "BaseImageInputHint": "The original token image before framing. Choose a server file, or upload, paste, or drag in a local image directly from your computer. Note - local images cannot be used with Auto-Frame.",
       "FrameImage": "Frame Image",
       "FrameImageHint": "Path to the frame overlay image (PNG, WEBP recommended).",
-      "AutoCircular": "Auto (circular)",
       "BrowseFiles": "Browse Files",
       "UploadFromPC": "Upload from your computer",
       "DropImage": "Drop image here",
-      "Clear": "Clear",
       "BaseImageSettings": "Base Image Settings",
       "BaseScale": "Base Scale",
       "BaseScaleHint": "Scale factor for the base token image (shrinks to fit inside frame).",
@@ -164,8 +161,30 @@
       "ApplyAutoFrame": "Apply Auto-Frame",
       "ApplyAutoFrameHint": "Enable Token Framer to manage this token. Auto-frames when art is swapped.",
       "RestoreOriginal": "Reset to Original",
-      "ResetHint": "Remove the frame and restore the original token image.",
-      "PrototypeWarning": "If editing a Prototype Token for the first time, click Apply Frame."
+      "ResetHint": "Remove the frame and restore the original token image."
+    },
+    "Batch": {
+      "Title": "Batch Frame",
+      "ButtonLabel": "Batch Frame",
+      "ButtonHint": "Apply current frame settings to multiple images at once.",
+      "BrowseServer": "Select Server Folder",
+      "SelectFiles": "Select Files from Computer",
+      "SourceHint": "Select images to apply the current frame settings.",
+      "SelectAll": "Select All",
+      "SelectNone": "Select None",
+      "ChangeSource": "Change Source",
+      "OutputFolder": "Foundry Save Folder",
+      "Save": "Save to Foundry",
+      "DownloadZip": "Save to PC",
+      "Processing": "Generating previews... {current} / {total}",
+      "Saving": "Saving... {current} / {total}",
+      "Complete": "Batch complete! Saved {count} images to {folder}.",
+      "DownloadComplete": "Download complete! {count} framed tokens packaged.",
+      "NoImages": "No images found. Already-framed images (ending in '_token') are excluded.",
+      "NoSelection": "No images selected to save.",
+      "SkippedCount": "Skipped {count} already-framed images.",
+      "BrowseFolderFailed": "Failed to browse folder. Check console for details.",
+      "CreateFolderFailed": "Failed to create output folder. Check console for details."
     }
   }
 }

@@ -174,7 +174,7 @@ function applyMaskShape(ctx, shape, centerX, centerY, radius, offsetX = 0, offse
 /**
  * Composite the base image with frame and mask
  */
-async function compositeImage(baseImagePath, frameData, size = 1000, quality = 0.95) {
+export async function compositeImage(baseImagePath, frameData, size = 1000, quality = 0.95) {
   const {
     frameImage, maskImage, baseScale = 0.9, baseOffsetX = 0, baseOffsetY = 0,
     maskRadius = 0.95, maskScale = 1.0, maskOffsetX = 0, maskOffsetY = 0,
@@ -343,7 +343,7 @@ async function compositeImage(baseImagePath, frameData, size = 1000, quality = 0
 /**
  * Suppress info notifications during cache file uploads
  */
-function beginNotificationSuppression() {
+export function beginNotificationSuppression() {
   if (notificationSuppressionCount === 0) {
     originalNotificationInfo = ui.notifications.info.bind(ui.notifications);
     ui.notifications.info = () => {};
@@ -354,7 +354,7 @@ function beginNotificationSuppression() {
 /**
  * Restore info notifications after cache file upload
  */
-function endNotificationSuppression() {
+export function endNotificationSuppression() {
   notificationSuppressionCount--;
   if (notificationSuppressionCount === 0 && originalNotificationInfo) {
     ui.notifications.info = originalNotificationInfo;

@@ -8,6 +8,7 @@
 
 import { MODULE_ID, debugLog } from './main.js';
 import { applyFrameToToken, restoreOriginalImage, generateFrameForPrototype, generateCacheKey } from './frame-layer.js';
+import { BatchFrameDialog } from './batch-frame.js';
 
 // Debounce timer for preview updates
 let previewDebounceTimer = null;
@@ -792,6 +793,20 @@ class TokenFramerDialog extends FormApplication {
         }
       });
     });
+
+    // Batch Frame button
+    const batchButton = rootEl.querySelector('.tfl-batch-button');
+    if (batchButton) {
+      batchButton.addEventListener('click', () => {
+        const frameData = this._gatherFormData(rootEl);
+        delete frameData.popOutPreview;
+        if (!frameData.frameImage) {
+          ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.NoFrameImage'));
+          return;
+        }
+        new BatchFrameDialog(frameData).render({force: true});
+      });
+    }
 
     // Apply Frame button
     const applyButton = rootEl.querySelector('.tfl-apply-button');

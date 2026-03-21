@@ -2,68 +2,48 @@
 
 This is a vibe-coded (read, AI slop) project made for personal use that I figured I'd put on GitHub in case anyone is interested.
 
-This is a Foundry VTT v13 module that composites pog-style frames onto token images. A base token image is combined with a frame overlay, optional mask, background, and decoration layers to create a finished framed token, which is cached as a WebP file for performance. Designed for quick tokenization and seamless integration with Token Variant Art for on-the-fly token art switching.
+A Foundry VTT v13 module that composites pog-style frames onto token images. Combine a base token image with a frame overlay, optional mask, background, and decoration layers to create a finished framed token — cached as a WebP file for performance. Designed for quick tokenization and seamless integration with Token Variant Art.
 
-## Features
+## Requirements & Installation
 
-- **Frame Compositing**: Automatically combines base token images with frame overlays
-- **Multiple Mask Shapes**: Circle, Square, Hexagon presets, or custom mask images
-- **Layered Compositing**: Background, base image, frame, pop-out, and overlay/decoration layers
-- **Pop-Out Effect**: Create 3D-style tokens where part of the image pops out over the frame, with configurable arc and rotation
-- **Background Options**: Solid color and/or background image support
-- **Overlay/Decoration Layer**: Add badges, icons, or secondary frames on top
-- **Base Over Frame**: Option to draw the base image on top of the frame
-- **Live Preview**: Large 500x500 preview shows changes in real-time
-- **Adjustable Settings**: Fine-tune scale and offset for all layers
-- **Interactive Scale Controls**: Editable number inputs with mouse wheel scrolling
-- **Local Image Upload**: Upload images directly from your computer, drag-and-drop onto the preview, or paste from clipboard
-- **Quick Save**: One-click save to a preset folder, update the token image, and detach auto-framing
-- **Save As**: Export the composited image as a WebP file to any location
-- **Anti-Double-Framing**: Images with filenames ending in "token" are automatically skipped by auto-framing
-- **Actor Sheet Integration**: Open Token Framer directly from the actor sheet header menu
-- **Cached Output**: Composited images are saved as WebP files for fast loading
-- **No Flash of Unframed Content**: Frame compositing happens before the token renders
-- **Copy-Paste Preservation**: Copied tokens retain their current framed art
-- **Token Variant Art Compatible**: Full support for per-art enable/disable configurations
+**Requires Foundry VTT v13 or higher.**
 
-## Usage
+### Manual Installation
 
-### Enabling Auto-Frame on a Token
+1. Download the latest release
+2. Extract to `Data/modules/token-framer`
+3. Restart Foundry VTT
+4. Enable the module in your world's module settings
 
-1. Open a token's configuration (right-click a token and click the gear, or edit an actor's prototype token from the sidebar)
-2. Navigate to the **Appearance** tab
+## Quick Start
+
+1. Open a token's configuration (right-click a token → gear icon, or edit a prototype token from the actor sidebar)
+2. Go to the **Appearance** tab
 3. Find the **Auto-Frame** controls below the Image Path field
-4. Check **Enable** to enable automatic framing for this token
-5. Click **Configure** to open the Token Framer dialog
+4. Check **Enable** and click **Configure**
+5. Choose a frame image — the preview updates in real-time
+6. Click **Apply Auto-Frame** to save
 
-### Opening Token Framer from an Actor Sheet
+Your token is now framed. When its art changes (manually or via Token Variant Art), the new image is automatically framed with the same settings.
 
-You can also open Token Framer directly from any actor sheet's header menu (the icon bar at the top of the sheet). This is useful for quickly composing a prototype token without navigating into the token configuration first.
+## Token Framer Dialog
 
-### Token Framer Dialog
+The dialog has a large preview on the left and settings on the right.
 
-The dialog provides a large preview on the left and all frame settings on the right:
+**Base Image** — The original token image to frame. You can browse the server, upload from your computer, drag-and-drop onto the preview, or paste from clipboard.
 
-**Main Settings**
-- **Base Image**: The original token image to frame. Browse from the server, upload from your computer, drag-and-drop an image onto the preview, or paste from clipboard.
-- **Frame Image**: The frame overlay (PNG or WebP with transparency recommended). Also supports local upload.
+**Frame Image** — The frame overlay (PNG or WebP with transparency recommended).
 
-**Collapsible Sections**
-- **Base Image Settings**: Scale and offset for the base token image
-- **Frame Settings**: Base over frame toggle, frame scale and offset
-- **Mask Settings**: Shape selection (Circle/Square/Hexagon/None), custom mask image, scale and offset
-- **Overlay / Decoration**: Optional image drawn on top of everything (for badges, icons, etc.)
-- **Pop Out**: Create a 3D effect where part of the base image extends over the frame. Configure the arc size and rotation, with an optional preview highlight.
-- **Background**: Enable solid color and/or background image behind the base
+**Collapsible Sections** — Additional settings for base image scale/offset, frame scale/offset, mask shape, overlay, pop-out effect, and background are available in expandable sections. See [Advanced Features](#advanced-features) for details.
 
-**Actions**
-- **Sync Base Image from Image Path**: Pull the current image from the token's Image Path field
-- **Reset to Original**: Disable framing and revert to the base image
-- **Save As...**: Export the current preview as a WebP file to a folder you choose
-- **Quick Save**: Save to the preset Quick Save folder, update the token's image, and detach auto-framing
-- **Apply Auto-Frame**: Enable Token Framer to manage this token with automatic framing on art swaps
+**Actions:**
+- **Sync Base Image from Image Path** — Pull the current image from the token's Image Path field
+- **Reset to Original** — Disable framing and revert to the base image
+- **Save As...** — Export the composited image as a WebP file to a folder you choose
+- **Quick Save** — Save to the preset Quick Save folder, update the token's image, and detach auto-framing
+- **Apply Auto-Frame** — Enable Token Framer to manage this token with automatic framing on art swaps
 
-### Workflow Modes
+## Workflow Modes
 
 Token Framer supports two main workflows:
 
@@ -81,34 +61,80 @@ Token Framer supports two main workflows:
 
 When Auto-Frame is enabled for a token, a green indicator badge is shown at the top of the Token Framer dialog.
 
-### Settings Reference
+## Batch Frame
 
-| Setting | Description |
-|---------|-------------|
-| **Base Image** | The original token image to frame |
-| **Frame Image** | The frame overlay image (should have transparency) |
-| **Base Scale** | Scale factor for the base image (0.5 - 1.5) |
-| **Base Offset** | Pixel offset for positioning the base image |
-| **Base Image Over Frame** | Draw the masked base image on top of the frame |
-| **Frame Scale** | Scale factor for the frame overlay (0.5 - 1.5) |
-| **Frame Offset** | Pixel offset for positioning the frame |
-| **Mask Shape** | Preset mask shape: Circle, Square, Hexagon, or None |
-| **Custom Mask Image** | Optional custom mask for complex shapes (white = visible, black = hidden) |
-| **Mask Scale** | Scale of the mask shape or custom mask (0.5 - 1.5) |
-| **Mask Offset** | Pixel offset for positioning the mask |
-| **Overlay Image** | Optional decoration/badge drawn on top of everything |
-| **Overlay Scale** | Scale factor for the overlay (0.5 - 1.5) |
-| **Overlay Offset** | Pixel offset for positioning the overlay |
-| **Pop Out Enable** | Enable the pop-out effect |
-| **Pop Out Arc** | Size of the pop-out area in degrees (1 - 360) |
-| **Pop Out Rotation** | Rotation of the pop-out area (-180 to 180, 0 = top) |
-| **Pop Out Offset** | Pixel offset for the center of the pop-out wedge |
-| **Pop Out Preview** | Highlight the pop-out area in yellow on the preview |
-| **Background Enable** | Enable a solid color background |
-| **Background Color** | Color for the solid background |
-| **Background Image** | Optional image for the background layer |
-| **Background Scale** | Scale factor for the background image (0.5 - 1.5) |
-| **Background Offset** | Pixel offset for positioning the background image |
+Apply the current frame settings to multiple images at once. Open the Batch Frame dialog from the Token Framer dialog.
+
+### Selecting Images
+
+- **Select Files from Computer** — Choose images from your local machine
+- **Select Server Folder** — Browse a folder on the Foundry server
+
+Images are shown in a scrollable preview grid with checkboxes. Use **Select All** / **Select None** to toggle selections. Already-framed images (filenames ending in `_token`) are automatically excluded.
+
+### Saving
+
+- **Save to Foundry** — Composites the selected images at full resolution and saves them to the specified Foundry server folder
+- **Save to PC** — Composites the selected images and downloads them as a ZIP file to your computer
+
+A progress bar shows the current status during processing.
+
+## Actor Sheet Integration
+
+You can open Token Framer directly from any actor sheet's header menu (the icon bar at the top of the sheet). This is useful for quickly composing a prototype token without navigating into the token configuration first.
+
+## Advanced Features
+
+### Mask Settings
+
+Control the shape used to clip the base image:
+- **Preset Shapes** — Circle, Square, Hexagon, or None (no mask)
+- **Custom Mask Image** — Use any image as a mask (white = visible, black = hidden), overrides the shape preset
+- **Mask Scale & Offset** — Fine-tune the mask size and position
+
+### Pop-Out Effect
+
+Create a 3D-style effect where part of the base image extends above the frame. Works best with transparent-background base images.
+- **Pop Out Arc** — Size of the pop-out area in degrees (1–360)
+- **Pop Out Rotation** — Rotate the pop-out area (-180 to 180, 0 = top)
+- **Pop Out Offset** — Adjust the center of the pop-out wedge
+- **Show Preview Highlight** — Highlights the pop-out area in yellow on the preview for easier adjustment
+
+### Overlay / Decoration
+
+An optional image drawn on top of everything — useful for badges, icons, or a second frame layer. Configurable scale and offset.
+
+### Background
+
+- **Solid Color** — Enable a background color behind the base image (use the color picker on the preview to sample colors)
+- **Background Image** — Optional image for the background layer, with its own scale and offset
+
+### Base Over Frame
+
+Toggle to draw the base image on top of the frame instead of behind it.
+
+### Scale & Offset Controls
+
+All layers (base, frame, mask, overlay, background) have independent scale (0.5–1.5) and pixel offset (X/Y) controls. Number inputs support mouse wheel scrolling for quick adjustments.
+
+## Token Variant Art Integration
+
+Token Framer is designed to work seamlessly with [Token Variant Art](https://foundryvtt.com/packages/token-variants):
+
+- **Automatic Framing**: When a token with framing enabled changes art via TVA, the new image is automatically framed
+- **Per-Art Configuration**: Use TVA's per-art configuration (Shift+Left Click on artwork) to enable or disable Token Framer for specific art pieces
+- **Non-Destructive**: TVA per-art settings are stored separately from the token's main settings
+- **Copy-Paste Preservation**: Copying a token with TVA-swapped art preserves the current framed image
+
+### Per-Art Workflow
+
+1. Select a token and open the TVA art browser
+2. Shift+Left Click on an artwork to open per-art configuration
+3. Find the Token Framer checkbox and configure as needed
+4. Check the TVA checkbox next to the Token Framer setting to include it in the per-art config
+5. Click **Save Config**
+
+Now when that specific art is applied, Token Framer will respect the per-art setting.
 
 ## Module Settings
 
@@ -130,34 +156,18 @@ Access via **Settings > Module Settings > Token Framer**:
 | **Default Pop Out Rotation** | 0 | Default rotation for the pop-out effect |
 | **Default Background Image Scale** | 1.0 | Default scale for the background image |
 | **Debug Mode** | Off | Enable console logging for troubleshooting |
-
-## Token Variant Art Integration
-
-Token Framer is designed to work seamlessly with [Token Variant Art](https://foundryvtt.com/packages/token-variants):
-
-- **Automatic Framing**: When a token with framing enabled changes art via TVA, the new image is automatically framed
-- **Per-Art Configuration**: Use TVA's per-art configuration (Shift+Left Click on artwork) to enable or disable Token Framer for specific art pieces
-- **Non-Destructive**: TVA per-art settings are stored separately from the token's main settings
-- **Copy-Paste Preservation**: Copying a token with TVA-swapped art preserves the current framed image
-
-### Per-Art Workflow
-
-1. Select a token and open the TVA art browser
-2. Shift+Left Click on an artwork to open per-art configuration
-3. Find the Token Framer checkbox and configure as needed
-4. Check the TVA checkbox next to the Token Framer setting to include it in the per-art config
-5. Click **Save Config**
-
-Now when that specific art is applied, Token Framer will respect the per-art setting.
+| **Regenerate Cache** | — | Regenerate cached images for all actors/tokens in the world |
 
 ## How It Works
 
-Token Framer uses a "Stop & Swap" pattern to ensure framed tokens display correctly:
+### Stop & Swap
+
+Token Framer uses a "Stop & Swap" pattern to prevent a flash of the unframed image:
 
 1. When a token's image changes, the update is intercepted
-2. A framed version is composited and cached
-3. The token is updated with the cached framed image path
-4. The token renders with the frame already applied - no flash of the unframed image
+2. A framed version is composited and cached as a WebP file
+3. The token is updated with the cached image path instead
+4. The token renders with the frame already applied
 
 ### Layer Compositing Order
 
@@ -175,20 +185,8 @@ If **Base Image Over Frame** is enabled, the base image is drawn after the frame
 
 Images with filenames ending in "token" (case-insensitive, before the extension) are automatically recognized as already-framed and skipped by auto-framing. This applies to:
 - Images saved via Quick Save (which append `_token` to filenames)
+- Images saved via Batch Frame
 - Manually prepared images following the same naming convention
-
-## Requirements
-
-- Foundry VTT v13 or higher
-
-## Installation
-
-### Manual Installation
-
-1. Download the latest release
-2. Extract to `Data/modules/token-framer`
-3. Restart Foundry VTT
-4. Enable the module in your world's module settings
 
 ## License
 

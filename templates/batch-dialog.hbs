@@ -1,0 +1,60 @@
+<div class="token-framer-batch-dialog">
+
+  <!-- Source Selection -->
+  <div class="tfl-batch-source">
+    <p class="hint">{{localize "TOKEN-FRAMER.Batch.SourceHint"}}</p>
+    <div class="tfl-batch-source-buttons">
+      <button type="button" class="tfl-batch-local-files" data-action="localFiles">
+        <i class="fas fa-upload"></i>
+        {{localize "TOKEN-FRAMER.Batch.SelectFiles"}}
+      </button>
+      <button type="button" class="tfl-batch-server-folder" data-action="serverFolder">
+        <i class="fas fa-folder-open"></i>
+        {{localize "TOKEN-FRAMER.Batch.BrowseServer"}}
+      </button>
+    </div>
+  </div>
+
+  <!-- Toolbar (hidden until images loaded) -->
+  <div class="tfl-batch-toolbar" style="display:none">
+    <button type="button" class="tfl-batch-select-all" data-action="selectAll">{{localize "TOKEN-FRAMER.Batch.SelectAll"}}</button>
+    <button type="button" class="tfl-batch-select-none" data-action="selectNone">{{localize "TOKEN-FRAMER.Batch.SelectNone"}}</button>
+    <span class="tfl-batch-count"></span>
+    <button type="button" class="tfl-batch-change-source" data-action="changeSource">
+      <i class="fas fa-folder-open"></i>
+      {{localize "TOKEN-FRAMER.Batch.ChangeSource"}}
+    </button>
+  </div>
+
+  <!-- Preview Grid (populated via JS) -->
+  <div class="tfl-batch-grid"></div>
+
+  <!-- Footer -->
+  <footer class="tfl-batch-footer">
+    <div class="tfl-batch-output-row">
+      <label>{{localize "TOKEN-FRAMER.Batch.OutputFolder"}}</label>
+      <input type="text" name="outputFolder" value="{{outputFolder}}" readonly>
+      <button type="button" class="tfl-icon-button tfl-batch-output-picker" data-action="outputPicker" title="{{localize "TOKEN-FRAMER.Config.BrowseFiles"}}">
+        <i class="fas fa-folder-open"></i>
+      </button>
+    </div>
+    <!-- Progress bar replaces buttons during processing -->
+    <div class="tfl-batch-progress" style="display:none">
+      <div class="tfl-batch-progress-bar">
+        <div class="tfl-batch-progress-fill"></div>
+      </div>
+      <span class="tfl-batch-progress-text"></span>
+    </div>
+    <div class="tfl-batch-button-row">
+      <button type="button" class="tfl-batch-download-button" data-action="downloadZip" disabled>
+        <i class="fas fa-download"></i>
+        {{localize "TOKEN-FRAMER.Batch.DownloadZip"}}
+      </button>
+      <button type="button" class="tfl-batch-save-button" data-action="save" disabled>
+        <i class="fas fa-save"></i>
+        {{localize "TOKEN-FRAMER.Batch.Save"}}
+      </button>
+    </div>
+  </footer>
+
+</div>
