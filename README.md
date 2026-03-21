@@ -176,8 +176,8 @@ The final image is built from these layers (bottom to top):
 1. **Background** (color and/or image, only visible through the mask)
 2. **Base Image** (masked by the selected shape or custom mask)
 3. **Frame** (the frame overlay)
-4. **Pop Out** (unmasked base image clipped to a pie wedge, creating a 3D effect)
-5. **Overlay/Decoration** (badges, icons, or secondary frames)
+4. **Overlay/Decoration** (badges, icons, or secondary frames)
+5. **Pop Out** (unmasked base image clipped to a pie wedge, creating a 3D effect)
 
 If **Base Image Over Frame** is enabled, the base image is drawn after the frame instead of before it.
 

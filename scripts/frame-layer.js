@@ -329,11 +329,11 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
     drawFrame();
   }
   
-  // Pop-out draws unmasked base image above the frame in a pie wedge
-  drawPopOut();
-
-  // Overlay is always on top of everything
+  // Overlay draws below pop-out so the pop-out effect is most prominent
   drawOverlay();
+
+  // Pop-out draws unmasked base image above everything in a pie wedge
+  drawPopOut();
 
   return new Promise((resolve) => {
     canvas.toBlob(resolve, 'image/webp', quality);

@@ -655,6 +655,16 @@
   border-color: var(--color-border-highlight, #666);
 }
 
+.tfl-dialog-footer .tfl-save-pc-button {
+  background: rgba(80, 120, 180, 0.25);
+  border-color: rgba(80, 120, 180, 0.4);
+}
+
+.tfl-dialog-footer .tfl-save-pc-button:hover {
+  background: rgba(80, 120, 180, 0.4);
+  border-color: rgba(80, 120, 180, 0.6);
+}
+
 .tfl-dialog-footer .tfl-save-image-button {
   background: rgba(100, 100, 140, 0.25);
   border-color: rgba(100, 100, 140, 0.4);

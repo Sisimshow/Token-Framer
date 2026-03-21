@@ -336,9 +336,13 @@
 
   <!-- Footer Actions -->
   <footer class="tfl-dialog-footer">
-    <button type="button" class="tfl-save-image-button" title="{{localize 'TOKEN-FRAMER.Config.SaveAsHint'}}">
+    <button type="button" class="tfl-save-pc-button" title="{{localize 'TOKEN-FRAMER.Config.SaveToPCHint'}}">
+      <i class="fas fa-download"></i>
+      {{localize "TOKEN-FRAMER.Config.SaveToPC"}}
+    </button>
+    <button type="button" class="tfl-save-image-button" title="{{localize 'TOKEN-FRAMER.Config.SaveToFoundryHint'}}">
       <i class="fas fa-file-export"></i>
-      {{localize "TOKEN-FRAMER.Config.SaveAs"}}
+      {{localize "TOKEN-FRAMER.Config.SaveToFoundry"}}
     </button>
     <button type="button" class="tfl-quick-save-button" title="{{#if autoFrameEnabled}}{{localize 'TOKEN-FRAMER.Config.QuickSaveDisabledHint'}}{{else}}{{localize 'TOKEN-FRAMER.Config.QuickSaveHint'}}{{/if}}" {{#if autoFrameEnabled}}disabled{{/if}}>
       <i class="fas fa-bolt"></i>

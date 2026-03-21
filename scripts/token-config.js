@@ -388,7 +388,10 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
       drawFrame();
     }
     
-    // Pop-out draws unmasked base image above the frame in a pie wedge
+    // Overlay draws below pop-out so the pop-out effect is most prominent
+    drawOverlay();
+
+    // Pop-out draws unmasked base image above everything in a pie wedge
     drawPopOut();
 
     // Draw pop-out preview highlight (UI-only, not saved to cache)
@@ -406,9 +409,6 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
       ctx.fill();
       ctx.restore();
     }
-
-    // Overlay is always on top of everything
-    drawOverlay();
 
     return canvas.toDataURL('image/png');
   } catch (err) {
@@ -655,7 +655,15 @@ class TokenFramerDialog extends FormApplication {
       });
     }
 
-    // Save As button - export composited image to user-chosen location
+    // Save to PC button - download composited image to user's computer
+    const savePCButton = rootEl.querySelector('.tfl-save-pc-button');
+    if (savePCButton) {
+      savePCButton.addEventListener('click', async () => {
+        await this._saveToPC(rootEl);
+      });
+    }
+
+    // Save to Foundry button - export composited image to user-chosen location
     const saveImageButton = rootEl.querySelector('.tfl-save-image-button');
     if (saveImageButton) {
       saveImageButton.addEventListener('click', async () => {
@@ -1025,6 +1033,84 @@ class TokenFramerDialog extends FormApplication {
     previewDebounceTimer = setTimeout(() => {
       this._updatePreview(rootEl);
     }, PREVIEW_DEBOUNCE_MS);
+  }
+
+  /**
+   * Download the composited image to the user's computer
+   */
+  async _saveToPC(rootEl) {
+    const frameData = this._gatherFormData(rootEl);
+    delete frameData.popOutPreview;
+
+    if (!this.baseImagePath) {
+      ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.NoBaseImage'));
+      return;
+    }
+
+    if (!frameData.frameImage) {
+      ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.NoFrameImage'));
+      return;
+    }
+
+    const cacheResolution = game.settings.get(MODULE_ID, 'cacheResolution') ?? 1000;
+
+    try {
+      const dataUrl = await generatePreview(this.baseImagePath, frameData, cacheResolution);
+
+      if (!dataUrl) {
+        ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.SaveImageFailed'));
+        return;
+      }
+
+      // Convert preview to a WebP blob
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+
+      const cacheQuality = game.settings.get(MODULE_ID, 'cacheQuality') ?? 0.95;
+      const webpBlob = await new Promise(resolve => {
+        canvas.toBlob(resolve, 'image/webp', cacheQuality);
+      });
+
+      const baseName = this.baseImagePath.split('/').pop().split('?')[0].replace(/\.[^.]+$/, '');
+      const filename = `${baseName}_token.webp`;
+
+      // Use native save dialog (Electron/Chrome) with blob URL fallback (Firefox)
+      if (window.showSaveFilePicker) {
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{ description: 'WebP Image', accept: { 'image/webp': ['.webp'] } }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(webpBlob);
+          await writable.close();
+          return;
+        } catch (e) {
+          if (e.name === 'AbortError') return;
+          // Fall through to anchor method
+        }
+      }
+
+      // Fallback: blob URL download (Firefox and others)
+      const url = URL.createObjectURL(webpBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    } catch (err) {
+      console.error(`${MODULE_ID} | Failed to save image to PC:`, err);
+      ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.SaveImageFailed'));
+    }
   }
 
   /**
