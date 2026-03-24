@@ -451,6 +451,7 @@ class TokenFramerDialog extends FormApplication {
     this.baseImagePath = '';
     this._localFileName = null;
     this._localUploads = new Map();
+    this._lastFocusedImageField = 'baseImage';
   }
 
   static get defaultOptions() {
@@ -612,7 +613,42 @@ class TokenFramerDialog extends FormApplication {
       });
     }
 
-    // Paste support on the dialog
+    // Track last-focused image field for paste routing and clear-on-delete
+    const imageFieldNames = ['baseImage', 'frameImage', 'maskImage', 'overlayImage', 'bgImage'];
+    rootEl.addEventListener('click', (e) => {
+      const formFields = e.target.closest('.tfl-form-fields');
+      if (!formFields) return;
+      const input = formFields.querySelector('input[type="text"]');
+      if (input && imageFieldNames.includes(input.name)) {
+        this._lastFocusedImageField = input.name;
+      }
+    }, true);
+
+    // Backspace/Delete to clear uploaded images (read-only fields)
+    imageFieldNames.forEach(fieldName => {
+      const input = rootEl.querySelector(`input[name="${fieldName}"]`);
+      if (!input) return;
+      input.addEventListener('focus', () => {
+        this._lastFocusedImageField = fieldName;
+      });
+      input.addEventListener('keydown', (e) => {
+        if ((e.key === 'Backspace' || e.key === 'Delete') && input.readOnly) {
+          e.preventDefault();
+          if (fieldName === 'baseImage') {
+            this._clearLocalImage(rootEl);
+            this.baseImagePath = '';
+          } else {
+            this._localUploads.delete(fieldName);
+            input.readOnly = false;
+            input.title = '';
+          }
+          input.value = '';
+          this._debouncedPreviewUpdate(rootEl);
+        }
+      });
+    });
+
+    // Paste support on the dialog — routes to last-focused image field
     this._pasteHandler = (e) => {
       const items = e.clipboardData?.items;
       if (!items) return;
@@ -621,7 +657,13 @@ class TokenFramerDialog extends FormApplication {
           e.preventDefault();
           e.stopPropagation();
           const file = item.getAsFile();
-          if (file) this._setLocalImage(file, rootEl);
+          if (!file) break;
+          const targetField = this._lastFocusedImageField || 'baseImage';
+          if (targetField === 'baseImage') {
+            this._setLocalImage(file, rootEl);
+          } else {
+            this._setLocalUpload(targetField, file, rootEl);
+          }
           break;
         }
       }
