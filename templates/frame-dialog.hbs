@@ -84,11 +84,41 @@
 
           <div class="tfl-form-group tfl-offset-group">
             <label>{{localize "TOKEN-FRAMER.Config.BaseOffset"}}</label>
+            <div class="tfl-offset-axes">
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+                <input type="range" name="baseOffsetX" value="{{baseOffsetX}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="baseOffsetX" value="{{baseOffsetX}}" min="-500" max="500" step="1">
+              </div>
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+                <input type="range" name="baseOffsetY" value="{{baseOffsetY}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="baseOffsetY" value="{{baseOffsetY}}" min="-500" max="500" step="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.BaseOpacity"}}</label>
             <div class="tfl-form-fields">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
-              <input type="number" name="baseOffsetX" value="{{baseOffsetX}}" step="1" placeholder="0">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
-              <input type="number" name="baseOffsetY" value="{{baseOffsetY}}" step="1" placeholder="0">
+              <input type="range" name="baseOpacity" value="{{baseOpacity}}" min="0" max="1" step="0.01">
+              <input type="number" class="range-value" data-for="baseOpacity" value="{{baseOpacity}}" min="0" max="1" step="0.01">
+            </div>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.BaseBrightness"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="baseBrightness" value="{{baseBrightness}}" min="0" max="2" step="0.05">
+              <input type="number" class="range-value" data-for="baseBrightness" value="{{baseBrightness}}" min="0" max="2" step="0.05">
+            </div>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.BaseContrast"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="baseContrast" value="{{baseContrast}}" min="0" max="2" step="0.05">
+              <input type="number" class="range-value" data-for="baseContrast" value="{{baseContrast}}" min="0" max="2" step="0.05">
             </div>
           </div>
         </div>
@@ -119,12 +149,36 @@
 
           <div class="tfl-form-group tfl-offset-group">
             <label>{{localize "TOKEN-FRAMER.Config.FrameOffset"}}</label>
-            <div class="tfl-form-fields">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
-              <input type="number" name="frameOffsetX" value="{{frameOffsetX}}" step="1" placeholder="0">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
-              <input type="number" name="frameOffsetY" value="{{frameOffsetY}}" step="1" placeholder="0">
+            <div class="tfl-offset-axes">
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+                <input type="range" name="frameOffsetX" value="{{frameOffsetX}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="frameOffsetX" value="{{frameOffsetX}}" min="-500" max="500" step="1">
+              </div>
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+                <input type="range" name="frameOffsetY" value="{{frameOffsetY}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="frameOffsetY" value="{{frameOffsetY}}" min="-500" max="500" step="1">
+              </div>
             </div>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.FrameOpacity"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="frameOpacity" value="{{frameOpacity}}" min="0" max="1" step="0.01">
+              <input type="number" class="range-value" data-for="frameOpacity" value="{{frameOpacity}}" min="0" max="1" step="0.01">
+            </div>
+          </div>
+
+          <div class="tfl-form-group tfl-tint-row">
+            <label>{{localize "TOKEN-FRAMER.Config.FrameTintColor"}}</label>
+            <div class="tfl-form-fields">
+              <input type="checkbox" name="frameTintEnabled" id="tfl-frame-tint-enabled" class="tfl-tint-checkbox" {{frameTintEnabled}}>
+              <input type="color" name="frameTintColor" value="{{frameTintColor}}" class="tfl-color-picker">
+              <input type="text" name="frameTintColorText" value="{{frameTintColor}}" class="tfl-color-text" placeholder="#FF0000">
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.FrameTintHint"}}</p>
           </div>
         </div>
       </div>
@@ -175,11 +229,17 @@
 
           <div class="tfl-form-group tfl-offset-group">
             <label>{{localize "TOKEN-FRAMER.Config.MaskOffset"}}</label>
-            <div class="tfl-form-fields">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
-              <input type="number" name="maskOffsetX" value="{{maskOffsetX}}" step="1" placeholder="0">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
-              <input type="number" name="maskOffsetY" value="{{maskOffsetY}}" step="1" placeholder="0">
+            <div class="tfl-offset-axes">
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+                <input type="range" name="maskOffsetX" value="{{maskOffsetX}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="maskOffsetX" value="{{maskOffsetX}}" min="-500" max="500" step="1">
+              </div>
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+                <input type="range" name="maskOffsetY" value="{{maskOffsetY}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="maskOffsetY" value="{{maskOffsetY}}" min="-500" max="500" step="1">
+              </div>
             </div>
           </div>
         </div>
@@ -216,12 +276,36 @@
 
           <div class="tfl-form-group tfl-offset-group">
             <label>{{localize "TOKEN-FRAMER.Config.OverlayOffset"}}</label>
-            <div class="tfl-form-fields">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
-              <input type="number" name="overlayOffsetX" value="{{overlayOffsetX}}" step="1" placeholder="0">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
-              <input type="number" name="overlayOffsetY" value="{{overlayOffsetY}}" step="1" placeholder="0">
+            <div class="tfl-offset-axes">
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+                <input type="range" name="overlayOffsetX" value="{{overlayOffsetX}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="overlayOffsetX" value="{{overlayOffsetX}}" min="-500" max="500" step="1">
+              </div>
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+                <input type="range" name="overlayOffsetY" value="{{overlayOffsetY}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="overlayOffsetY" value="{{overlayOffsetY}}" min="-500" max="500" step="1">
+              </div>
             </div>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.OverlayOpacity"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="overlayOpacity" value="{{overlayOpacity}}" min="0" max="1" step="0.01">
+              <input type="number" class="range-value" data-for="overlayOpacity" value="{{overlayOpacity}}" min="0" max="1" step="0.01">
+            </div>
+          </div>
+
+          <div class="tfl-form-group tfl-tint-row">
+            <label>{{localize "TOKEN-FRAMER.Config.OverlayTintColor"}}</label>
+            <div class="tfl-form-fields">
+              <input type="checkbox" name="overlayTintEnabled" id="tfl-overlay-tint-enabled" class="tfl-tint-checkbox" {{overlayTintEnabled}}>
+              <input type="color" name="overlayTintColor" value="{{overlayTintColor}}" class="tfl-color-picker">
+              <input type="text" name="overlayTintColorText" value="{{overlayTintColor}}" class="tfl-color-text" placeholder="#FF0000">
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.OverlayTintHint"}}</p>
           </div>
         </div>
       </div>
@@ -269,11 +353,17 @@
 
           <div class="tfl-form-group tfl-offset-group">
             <label>{{localize "TOKEN-FRAMER.Config.PopOutOffset"}}</label>
-            <div class="tfl-form-fields">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
-              <input type="number" name="popOutOffsetX" value="{{popOutOffsetX}}" step="1" placeholder="0">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
-              <input type="number" name="popOutOffsetY" value="{{popOutOffsetY}}" step="1" placeholder="0">
+            <div class="tfl-offset-axes">
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+                <input type="range" name="popOutOffsetX" value="{{popOutOffsetX}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="popOutOffsetX" value="{{popOutOffsetX}}" min="-500" max="500" step="1">
+              </div>
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+                <input type="range" name="popOutOffsetY" value="{{popOutOffsetY}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="popOutOffsetY" value="{{popOutOffsetY}}" min="-500" max="500" step="1">
+              </div>
             </div>
           </div>
         </div>
@@ -321,12 +411,78 @@
 
           <div class="tfl-form-group tfl-offset-group">
             <label>{{localize "TOKEN-FRAMER.Config.BackgroundImageOffset"}}</label>
-            <div class="tfl-form-fields">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
-              <input type="number" name="bgImageOffsetX" value="{{bgImageOffsetX}}" step="1" placeholder="0">
-              <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
-              <input type="number" name="bgImageOffsetY" value="{{bgImageOffsetY}}" step="1" placeholder="0">
+            <div class="tfl-offset-axes">
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+                <input type="range" name="bgImageOffsetX" value="{{bgImageOffsetX}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="bgImageOffsetX" value="{{bgImageOffsetX}}" min="-500" max="500" step="1">
+              </div>
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+                <input type="range" name="bgImageOffsetY" value="{{bgImageOffsetY}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="bgImageOffsetY" value="{{bgImageOffsetY}}" min="-500" max="500" step="1">
+              </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Background Color Removal -->
+      <div class="tfl-collapsible" data-collapsed="true">
+        <div class="tfl-collapsible-header">
+          <i class="fas fa-chevron-down tfl-collapse-icon"></i>
+          <label>{{localize "TOKEN-FRAMER.Config.ColorRemove"}}</label>
+        </div>
+        <div class="tfl-collapsible-content">
+          <div class="tfl-form-group tfl-bg-row">
+            <div class="tfl-bg-enable">
+              <input type="checkbox" name="colorRemoveEnabled" id="tfl-color-remove-enabled">
+              <label for="tfl-color-remove-enabled">{{localize "TOKEN-FRAMER.Config.ColorRemoveEnable"}}</label>
+            </div>
+            <div class="tfl-bg-color">
+              <label>{{localize "TOKEN-FRAMER.Config.ColorRemoveColor"}}</label>
+              <input type="color" name="colorRemoveColor" value="{{colorRemoveColor}}" class="tfl-color-picker">
+              <input type="text" name="colorRemoveColorText" value="{{colorRemoveColor}}" class="tfl-color-text" placeholder="#FFFFFF">
+            </div>
+          </div>
+          <p class="hint">{{localize "TOKEN-FRAMER.Config.ColorRemoveHint"}}</p>
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.ColorRemoveThreshold"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="colorRemoveThreshold" value="{{colorRemoveThreshold}}" min="0" max="100" step="1">
+              <input type="number" class="range-value" data-for="colorRemoveThreshold" value="{{colorRemoveThreshold}}" min="0" max="100" step="1">
+            </div>
+          </div>
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.ColorRemoveFeather"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="colorRemoveFeather" value="{{colorRemoveFeather}}" min="0" max="50" step="1">
+              <input type="number" class="range-value" data-for="colorRemoveFeather" value="{{colorRemoveFeather}}" min="0" max="50" step="1">
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.ColorRemoveFeatherHint"}}</p>
+          </div>
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.ColorRemoveGrow"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="colorRemoveGrow" value="{{colorRemoveGrow}}" min="0" max="10" step="1">
+              <input type="number" class="range-value" data-for="colorRemoveGrow" value="{{colorRemoveGrow}}" min="0" max="10" step="1">
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.ColorRemoveGrowHint"}}</p>
+          </div>
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.ColorRemoveDefringe"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="colorRemoveDefringe" value="{{colorRemoveDefringe}}" min="0" max="100" step="1">
+              <input type="number" class="range-value" data-for="colorRemoveDefringe" value="{{colorRemoveDefringe}}" min="0" max="100" step="1">
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.ColorRemoveDefringeHint"}}</p>
+          </div>
+          <div class="tfl-form-group tfl-toggle-row">
+            <div class="tfl-toggle-option">
+              <input type="checkbox" name="colorRemoveEdgesOnly" id="tfl-color-remove-edges-only" {{colorRemoveEdgesOnly}}>
+              <label for="tfl-color-remove-edges-only">{{localize "TOKEN-FRAMER.Config.ColorRemoveEdgesOnly"}}</label>
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.ColorRemoveEdgesOnlyHint"}}</p>
           </div>
         </div>
       </div>

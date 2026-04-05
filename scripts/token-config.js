@@ -86,7 +86,12 @@ function getDefaultSettings() {
     bgImageScale: game.settings.get(MODULE_ID, 'defaultBgImageScale') ?? 1.0,
     popOutDegrees: game.settings.get(MODULE_ID, 'defaultPopOutDegrees') ?? 180,
     popOutRotation: game.settings.get(MODULE_ID, 'defaultPopOutRotation') ?? 0,
-    defaultFrameImage: game.settings.get(MODULE_ID, 'defaultFrameImage') ?? 'modules/token-framer/assets/default.webp'
+    defaultFrameImage: game.settings.get(MODULE_ID, 'defaultFrameImage') ?? 'modules/token-framer/assets/default.webp',
+    colorRemoveThreshold: game.settings.get(MODULE_ID, 'defaultColorRemoveThreshold') ?? 25,
+    colorRemoveFeather: game.settings.get(MODULE_ID, 'defaultColorRemoveFeather') ?? 2,
+    colorRemoveGrow: game.settings.get(MODULE_ID, 'defaultColorRemoveGrow') ?? 1,
+    colorRemoveDefringe: game.settings.get(MODULE_ID, 'defaultColorRemoveDefringe') ?? 15,
+    colorRemoveEdgesOnly: game.settings.get(MODULE_ID, 'defaultColorRemoveEdgesOnly') ?? false
   };
 }
 
@@ -207,7 +212,14 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
     popOutDegrees = 180,
     popOutRotation = 0,
     popOutOffsetX = 0,
-    popOutOffsetY = 0
+    popOutOffsetY = 0,
+    baseOpacity = 1.0,
+    frameOpacity = 1.0,
+    overlayOpacity = 1.0,
+    frameTintColor = '',
+    overlayTintColor = '',
+    baseBrightness = 1.0,
+    baseContrast = 1.0
   } = frameData;
 
   if (!baseImagePath || !frameImage) {
@@ -280,9 +292,14 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
       }
     };
 
+    // Build CSS filter string for base image brightness/contrast
+    const baseFilter = (baseBrightness !== 1.0 || baseContrast !== 1.0)
+      ? `brightness(${baseBrightness}) contrast(${baseContrast})` : 'none';
+
     // Helper function to draw the masked base image
     const drawMaskedBase = () => {
       ctx.save();
+      ctx.globalAlpha = baseOpacity;
       
       if (maskImg) {
         // Custom mask image - ignore maskShape
@@ -292,7 +309,9 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
         const baseCtx = baseCanvas.getContext('2d');
         
         drawBackground(baseCtx);
+        if (baseFilter !== 'none') baseCtx.filter = baseFilter;
         baseCtx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+        if (baseFilter !== 'none') baseCtx.filter = 'none';
         
         const maskCanvas = document.createElement('canvas');
         maskCanvas.width = size;
@@ -326,22 +345,45 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
         applyMaskShape(ctx, maskShape, centerX, centerY, radius, scaledMaskOffsetX, scaledMaskOffsetY);
         
         drawBackground(ctx);
+        if (baseFilter !== 'none') ctx.filter = baseFilter;
         ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+        if (baseFilter !== 'none') ctx.filter = 'none';
       }
 
+      ctx.globalAlpha = 1.0;
       ctx.restore();
+    };
+
+    // Helper to draw an image with an optional tint color (multiply blend preserves detail)
+    const drawWithTint = (targetCtx, img, x, y, w, h, tintColor) => {
+      if (!tintColor) {
+        targetCtx.drawImage(img, x, y, w, h);
+        return;
+      }
+      const off = document.createElement('canvas');
+      off.width = size;
+      off.height = size;
+      const offCtx = off.getContext('2d');
+      // Draw the original image
+      offCtx.drawImage(img, x, y, w, h);
+      // Multiply the tint color over it (preserves light/dark detail)
+      offCtx.globalCompositeOperation = 'multiply';
+      offCtx.fillStyle = tintColor;
+      offCtx.fillRect(0, 0, size, size);
+      // Restore original alpha (multiply affects alpha too)
+      offCtx.globalCompositeOperation = 'destination-in';
+      offCtx.drawImage(img, x, y, w, h);
+      targetCtx.drawImage(off, 0, 0);
     };
 
     // Helper function to draw the frame
     const drawFrame = () => {
+      ctx.save();
+      ctx.globalAlpha = frameOpacity;
       const frameSize = size * frameScale;
-      ctx.drawImage(
-        frameImg,
-        centerX - frameSize / 2 + scaledFrameOffsetX,
-        centerY - frameSize / 2 + scaledFrameOffsetY,
-        frameSize,
-        frameSize
-      );
+      drawWithTint(ctx, frameImg, centerX - frameSize / 2 + scaledFrameOffsetX, centerY - frameSize / 2 + scaledFrameOffsetY, frameSize, frameSize, frameTintColor);
+      ctx.globalAlpha = 1.0;
+      ctx.restore();
     };
 
     // Scale overlay offsets
@@ -351,14 +393,12 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
     // Helper function to draw the overlay (always on top)
     const drawOverlay = () => {
       if (overlayImg) {
+        ctx.save();
+        ctx.globalAlpha = overlayOpacity;
         const overlaySize = size * overlayScale;
-        ctx.drawImage(
-          overlayImg,
-          centerX - overlaySize / 2 + scaledOverlayOffsetX,
-          centerY - overlaySize / 2 + scaledOverlayOffsetY,
-          overlaySize,
-          overlaySize
-        );
+        drawWithTint(ctx, overlayImg, centerX - overlaySize / 2 + scaledOverlayOffsetX, centerY - overlaySize / 2 + scaledOverlayOffsetY, overlaySize, overlaySize, overlayTintColor);
+        ctx.globalAlpha = 1.0;
+        ctx.restore();
       }
     };
 
@@ -366,6 +406,7 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
     const drawPopOut = () => {
       if (!popOutEnabled || popOutDegrees <= 0) return;
       ctx.save();
+      ctx.globalAlpha = baseOpacity;
       const halfAngle = (popOutDegrees / 2) * Math.PI / 180;
       const centerAngle = (popOutRotation - 90) * Math.PI / 180;
       const popCenterX = centerX + scaledPopOutOffsetX;
@@ -375,16 +416,47 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
       ctx.arc(popCenterX, popCenterY, size, centerAngle - halfAngle, centerAngle + halfAngle);
       ctx.closePath();
       ctx.clip();
+      // Redraw background in the wedge (it was excluded along with the masked base)
+      drawBackground(ctx);
+      if (baseFilter !== 'none') ctx.filter = baseFilter;
       ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+      if (baseFilter !== 'none') ctx.filter = 'none';
+      ctx.globalAlpha = 1.0;
       ctx.restore();
     };
 
+    // Helper: build the pop-out wedge clip path (used to exclude it from masked base)
+    const popOutHalfAngle = (popOutDegrees / 2) * Math.PI / 180;
+    const popOutCenterAngle = (popOutRotation - 90) * Math.PI / 180;
+    const popCX = centerX + scaledPopOutOffsetX;
+    const popCY = centerY + scaledPopOutOffsetY;
+
     // Draw in order based on baseOverFrame setting
+    // When pop-out is enabled, exclude the wedge from drawMaskedBase via even-odd clip
+    // so the base isn't drawn twice (masked + pop-out) in that zone.
+    const needsWedgeExclusion = popOutEnabled && popOutDegrees > 0;
+
+    const drawMaskedBaseExcluded = () => {
+      if (needsWedgeExclusion) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, size, size);
+        ctx.moveTo(popCX, popCY);
+        ctx.arc(popCX, popCY, size, popOutCenterAngle - popOutHalfAngle, popOutCenterAngle + popOutHalfAngle);
+        ctx.closePath();
+        ctx.clip('evenodd');
+      }
+      drawMaskedBase();
+      if (needsWedgeExclusion) {
+        ctx.restore();
+      }
+    };
+
     if (baseOverFrame) {
       drawFrame();
-      drawMaskedBase();
+      drawMaskedBaseExcluded();
     } else {
-      drawMaskedBase();
+      drawMaskedBaseExcluded();
       drawFrame();
     }
     
@@ -452,6 +524,8 @@ class TokenFramerDialog extends FormApplication {
     this._localFileName = null;
     this._localUploads = new Map();
     this._lastFocusedImageField = 'baseImage';
+    this._originalBaseImagePath = '';
+    this._lastPickedColor = null; // {r, g, b} of last sampled pixel
   }
 
   static get defaultOptions() {
@@ -479,6 +553,7 @@ class TokenFramerDialog extends FormApplication {
       }
     }
     this.baseImagePath = originalImage;
+    if (!this._originalBaseImagePath) this._originalBaseImagePath = originalImage;
 
     return {
       moduleId: MODULE_ID,
@@ -511,7 +586,22 @@ class TokenFramerDialog extends FormApplication {
       popOutRotation: frameData.popOutRotation ?? defaults.popOutRotation,
       popOutOffsetX: frameData.popOutOffsetX ?? 0,
       popOutOffsetY: frameData.popOutOffsetY ?? 0,
-      autoFrameEnabled: frameData.enabled ? true : false
+      autoFrameEnabled: frameData.enabled ? true : false,
+      baseOpacity: frameData.baseOpacity ?? 1.0,
+      frameOpacity: frameData.frameOpacity ?? 1.0,
+      overlayOpacity: frameData.overlayOpacity ?? 1.0,
+      frameTintColor: frameData.frameTintColor ?? '#FF0000',
+      frameTintEnabled: frameData.frameTintColor ? 'checked' : '',
+      overlayTintColor: frameData.overlayTintColor ?? '#FF0000',
+      overlayTintEnabled: frameData.overlayTintColor ? 'checked' : '',
+      baseBrightness: frameData.baseBrightness ?? 1.0,
+      baseContrast: frameData.baseContrast ?? 1.0,
+      colorRemoveColor: '#FFFFFF',
+      colorRemoveThreshold: defaults.colorRemoveThreshold,
+      colorRemoveFeather: defaults.colorRemoveFeather,
+      colorRemoveGrow: defaults.colorRemoveGrow,
+      colorRemoveDefringe: defaults.colorRemoveDefringe,
+      colorRemoveEdgesOnly: defaults.colorRemoveEdgesOnly ? 'checked' : ''
     };
   }
 
@@ -545,6 +635,7 @@ class TokenFramerDialog extends FormApplication {
               if (targetName === 'baseImage') {
                 this._clearLocalImage(rootEl);
                 this.baseImagePath = decodedPath;
+                this._originalBaseImagePath = decodedPath;
               } else if (this._localUploads.has(targetName)) {
                 this._localUploads.delete(targetName);
                 input.readOnly = false;
@@ -692,6 +783,7 @@ class TokenFramerDialog extends FormApplication {
           baseImageInput.value = newPath;
         }
         this.baseImagePath = newPath;
+        this._originalBaseImagePath = newPath;
         this._debouncedPreviewUpdate(rootEl);
         debugLog('Base image refreshed to:', newPath);
       });
@@ -725,11 +817,13 @@ class TokenFramerDialog extends FormApplication {
     // Range slider and number input two-way sync with preview update
     rootEl.querySelectorAll('input[type="range"]').forEach(rangeInput => {
       const numberInput = rootEl.querySelector(`input.range-value[data-for="${rangeInput.name}"]`);
+      const step = parseFloat(rangeInput.step) || 0.01;
+      const decimals = step >= 1 ? 0 : Math.max(0, Math.ceil(-Math.log10(step)));
       
       // Range slider changes -> update number input
       rangeInput.addEventListener('input', () => {
         if (numberInput) {
-          numberInput.value = parseFloat(rangeInput.value).toFixed(2);
+          numberInput.value = parseFloat(rangeInput.value).toFixed(decimals);
         }
         this._debouncedPreviewUpdate(rootEl);
       });
@@ -750,7 +844,6 @@ class TokenFramerDialog extends FormApplication {
         // Mouse wheel scrolling on number input
         numberInput.addEventListener('wheel', (e) => {
           e.preventDefault();
-          const step = parseFloat(rangeInput.step) || 0.01;
           const min = parseFloat(rangeInput.min);
           const max = parseFloat(rangeInput.max);
           let currentVal = parseFloat(numberInput.value) || 0;
@@ -762,9 +855,11 @@ class TokenFramerDialog extends FormApplication {
             currentVal = Math.max(min, currentVal - step);
           }
           
-          numberInput.value = currentVal.toFixed(2);
+          numberInput.value = currentVal.toFixed(decimals);
           rangeInput.value = currentVal;
           this._debouncedPreviewUpdate(rootEl);
+          // Dispatch change so external listeners (e.g. color-removal reapply) fire
+          rangeInput.dispatchEvent(new Event('change', { bubbles: true }));
         });
       }
     });
@@ -782,11 +877,12 @@ class TokenFramerDialog extends FormApplication {
         if (input.name === 'baseImage') {
           if (isFromCache(input.value)) {
             ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.CachedImageWarning'));
-            input.value = isDataUrl(this.baseImagePath) ? `[Uploaded: ${this._localFileName}]` : this.baseImagePath;
+            input.value = isDataUrl(this.baseImagePath) ? game.i18n.format('TOKEN-FRAMER.Config.UploadedLabel', { name: this._localFileName }) : this.baseImagePath;
             return;
           }
           this._clearLocalImage(rootEl);
           this.baseImagePath = input.value;
+          this._originalBaseImagePath = input.value;
         } else if (this._localUploads.has(input.name)) {
           this._localUploads.delete(input.name);
           input.readOnly = false;
@@ -818,6 +914,139 @@ class TokenFramerDialog extends FormApplication {
         }
       });
     }
+
+    // Tint color picker syncing (frame and overlay)
+    for (const prefix of ['frameTint', 'overlayTint']) {
+      const tintPicker = rootEl.querySelector(`input[name="${prefix}Color"]`);
+      const tintText = rootEl.querySelector(`input[name="${prefix}ColorText"]`);
+      if (tintPicker && tintText) {
+        tintPicker.addEventListener('input', () => {
+          tintText.value = tintPicker.value.toUpperCase();
+          this._debouncedPreviewUpdate(rootEl);
+        });
+        tintText.addEventListener('change', () => {
+          const hexMatch = tintText.value.match(/^#?([0-9A-Fa-f]{6})$/);
+          if (hexMatch) {
+            const hexColor = `#${hexMatch[1].toUpperCase()}`;
+            tintText.value = hexColor;
+            tintPicker.value = hexColor;
+            this._debouncedPreviewUpdate(rootEl);
+          } else {
+            tintText.value = tintPicker.value.toUpperCase();
+          }
+        });
+      }
+    }
+
+    // Color removal - checkbox enable + color picker
+    const colorRemoveColorPicker = rootEl.querySelector('input[name="colorRemoveColor"]');
+    const colorRemoveColorText = rootEl.querySelector('input[name="colorRemoveColorText"]');
+    const colorRemoveEnabledCheckbox = rootEl.querySelector('input[name="colorRemoveEnabled"]');
+    const colorRemoveThresholdRange = rootEl.querySelector('input[type="range"][name="colorRemoveThreshold"]');
+    const colorRemoveThresholdNum = rootEl.querySelector('input.range-value[data-for="colorRemoveThreshold"]');
+
+    const reapplyColorRemoval = () => {
+      if (!colorRemoveEnabledCheckbox?.checked) return;
+      const hex = colorRemoveColorPicker?.value;
+      if (!hex) return;
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      const color = { r, g, b };
+      this._lastPickedColor = color;
+      const val = colorRemoveThresholdRange ? parseInt(colorRemoveThresholdRange.value) : 25;
+      const edgesOnly = rootEl.querySelector('input[name="colorRemoveEdgesOnly"]')?.checked ?? false;
+      const feather = parseInt(rootEl.querySelector('input[name="colorRemoveFeather"]')?.value) || 0;
+      const grow = parseInt(rootEl.querySelector('input[name="colorRemoveGrow"]')?.value) || 0;
+      const defringe = parseInt(rootEl.querySelector('input[name="colorRemoveDefringe"]')?.value) || 0;
+      this._removeColorFromOriginal(rootEl, color, val, edgesOnly, feather, grow, defringe);
+    };
+
+    const restoreFromColorRemove = () => {
+      if (this._originalBaseImagePath) {
+        this.baseImagePath = this._originalBaseImagePath;
+        this._lastPickedColor = null;
+        const baseImageInput = rootEl.querySelector('input[name="baseImage"]');
+        if (baseImageInput) {
+          baseImageInput.value = isDataUrl(this._originalBaseImagePath)
+            ? game.i18n.format('TOKEN-FRAMER.Config.UploadedLabel', { name: this._localFileName })
+            : this._originalBaseImagePath;
+          baseImageInput.readOnly = false;
+        }
+        this._debouncedPreviewUpdate(rootEl);
+      }
+    };
+
+    if (colorRemoveColorPicker && colorRemoveColorText) {
+      colorRemoveColorPicker.addEventListener('input', () => {
+        colorRemoveColorText.value = colorRemoveColorPicker.value.toUpperCase();
+        reapplyColorRemoval();
+      });
+      colorRemoveColorText.addEventListener('change', () => {
+        const hexMatch = colorRemoveColorText.value.match(/^#?([0-9A-Fa-f]{6})$/);
+        if (hexMatch) {
+          const hexColor = `#${hexMatch[1].toUpperCase()}`;
+          colorRemoveColorText.value = hexColor;
+          colorRemoveColorPicker.value = hexColor;
+          reapplyColorRemoval();
+        } else {
+          colorRemoveColorText.value = colorRemoveColorPicker.value.toUpperCase();
+        }
+      });
+    }
+
+    if (colorRemoveEnabledCheckbox) {
+      colorRemoveEnabledCheckbox.addEventListener('change', () => {
+        if (colorRemoveEnabledCheckbox.checked) {
+          reapplyColorRemoval();
+        } else {
+          restoreFromColorRemove();
+        }
+      });
+    }
+
+    // Click preview image to sample a color into the removal color picker
+    const previewImg = rootEl.querySelector('.tfl-preview-image');
+    if (previewImg) {
+      previewImg.addEventListener('click', async (e) => {
+        const rect = previewImg.getBoundingClientRect();
+        const normX = (e.clientX - rect.left) / rect.width;
+        const normY = (e.clientY - rect.top) / rect.height;
+        try {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = this._originalBaseImagePath || this.baseImagePath; });
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const sampleCtx = canvas.getContext('2d');
+          sampleCtx.drawImage(img, 0, 0);
+          const imageData = sampleCtx.getImageData(0, 0, canvas.width, canvas.height);
+          const sx = Math.max(0, Math.min(canvas.width - 1, Math.round(normX * canvas.width)));
+          const sy = Math.max(0, Math.min(canvas.height - 1, Math.round(normY * canvas.height)));
+          const idx = (sy * canvas.width + sx) * 4;
+          const r = imageData.data[idx], g = imageData.data[idx + 1], b = imageData.data[idx + 2];
+          const hexColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
+          if (colorRemoveColorPicker) colorRemoveColorPicker.value = hexColor;
+          if (colorRemoveColorText) colorRemoveColorText.value = hexColor;
+          if (colorRemoveEnabledCheckbox) colorRemoveEnabledCheckbox.checked = true;
+          reapplyColorRemoval();
+        } catch (err) {
+          console.error(`${MODULE_ID} | Color sample failed:`, err);
+        }
+      });
+    }
+    if (colorRemoveThresholdRange) colorRemoveThresholdRange.addEventListener('change', reapplyColorRemoval);
+    if (colorRemoveThresholdNum) colorRemoveThresholdNum.addEventListener('change', reapplyColorRemoval);
+    // Also re-apply when feather, grow, or edges-only changes
+    for (const name of ['colorRemoveFeather', 'colorRemoveGrow', 'colorRemoveDefringe']) {
+      const range = rootEl.querySelector(`input[type="range"][name="${name}"]`);
+      const num = rootEl.querySelector(`input.range-value[data-for="${name}"]`);
+      if (range) range.addEventListener('change', reapplyColorRemoval);
+      if (num) num.addEventListener('change', reapplyColorRemoval);
+    }
+    const edgesOnlyCheckbox = rootEl.querySelector('input[name="colorRemoveEdgesOnly"]');
+    if (edgesOnlyCheckbox) edgesOnlyCheckbox.addEventListener('change', reapplyColorRemoval);
 
     // Checkbox inputs that affect preview
     rootEl.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
@@ -889,11 +1118,12 @@ class TokenFramerDialog extends FormApplication {
     try {
       const dataUrl = await readFileAsDataURL(file);
       this.baseImagePath = dataUrl;
+      this._originalBaseImagePath = dataUrl;
       this._localFileName = file.name;
 
       const baseImageInput = rootEl.querySelector('input[name="baseImage"]');
       if (baseImageInput) {
-        baseImageInput.value = `[Uploaded: ${file.name}]`;
+        baseImageInput.value = game.i18n.format('TOKEN-FRAMER.Config.UploadedLabel', { name: file.name });
         baseImageInput.title = file.name;
         baseImageInput.readOnly = true;
       }
@@ -918,6 +1148,227 @@ class TokenFramerDialog extends FormApplication {
   }
 
   /**
+   * Re-apply color removal from the original base image with a stored color and new threshold.
+   */
+  async _removeColorFromOriginal(rootEl, color, threshold, edgesOnly = false, feather = 0, grow = 0, defringe = 0) {
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = this._originalBaseImagePath || this.baseImagePath;
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      this._applyColorRemoval(ctx, imageData, color, threshold, edgesOnly, feather, grow, defringe);
+
+      this.baseImagePath = canvas.toDataURL('image/png');
+      this._debouncedPreviewUpdate(rootEl);
+    } catch (err) {
+      console.error(`${MODULE_ID} | Color removal (threshold update) failed:`, err);
+    }
+  }
+
+  /**
+   * Pipeline: threshold → edges-only → grow (hard expand) → feather (spatial boundary gradient).
+   * Feather is boundary-distance-based, not color-distance-based, so interior
+   * character pixels are never affected.
+   */
+  _applyColorRemoval(ctx, imageData, color, threshold, edgesOnly = false, feather = 0, grow = 0, defringe = 0) {
+    const data = imageData.data;
+    const w = imageData.width;
+    const h = imageData.height;
+    const total = w * h;
+    const tSq = threshold * threshold;
+
+    const colorDistSq = (i) => {
+      const dr = data[i] - color.r;
+      const dg = data[i + 1] - color.g;
+      const db = data[i + 2] - color.b;
+      return dr * dr + dg * dg + db * db;
+    };
+
+    // ---------- Step 1: Build binary removal mask ----------
+    const mask = new Uint8Array(total); // 1 = remove
+
+    if (!edgesOnly) {
+      for (let pi = 0; pi < total; pi++) {
+        if (colorDistSq(pi * 4) <= tSq) mask[pi] = 1;
+      }
+    } else {
+      // BFS flood-fill from border pixels
+      const queue = [];
+      const enqueue = (x, y) => {
+        const pi = y * w + x;
+        if (mask[pi]) return;
+        if (colorDistSq(pi * 4) > tSq) return;
+        mask[pi] = 1;
+        queue.push(pi);
+      };
+      for (let x = 0; x < w; x++) { enqueue(x, 0); enqueue(x, h - 1); }
+      for (let y = 1; y < h - 1; y++) { enqueue(0, y); enqueue(w - 1, y); }
+      let head = 0;
+      while (head < queue.length) {
+        const pi = queue[head++];
+        const x = pi % w;
+        const y = (pi - x) / w;
+        if (x > 0) enqueue(x - 1, y);
+        if (x < w - 1) enqueue(x + 1, y);
+        if (y > 0) enqueue(x, y - 1);
+        if (y < h - 1) enqueue(x, y + 1);
+      }
+    }
+
+    // ---------- Step 2: Grow — expand mask by N pixels ----------
+    if (grow > 0) {
+      const growQueue = [];
+      const growDist = new Int16Array(total).fill(-1);
+      for (let pi = 0; pi < total; pi++) {
+        if (mask[pi]) { growDist[pi] = 0; growQueue.push(pi); }
+      }
+      let gHead = 0;
+      while (gHead < growQueue.length) {
+        const pi = growQueue[gHead++];
+        const d = growDist[pi];
+        if (d >= grow) continue;
+        const x = pi % w;
+        const y = (pi - x) / w;
+        const nb = [];
+        if (x > 0) nb.push(pi - 1);
+        if (x < w - 1) nb.push(pi + 1);
+        if (y > 0) nb.push(pi - w);
+        if (y < h - 1) nb.push(pi + w);
+        for (const npi of nb) {
+          if (growDist[npi] >= 0) continue;
+          growDist[npi] = d + 1;
+          mask[npi] = 1;
+          growQueue.push(npi);
+        }
+      }
+    }
+
+    // ---------- Step 3: Apply mask (hard removal) ----------
+    for (let pi = 0; pi < total; pi++) {
+      if (mask[pi]) data[pi * 4 + 3] = 0;
+    }
+
+    // ---------- Step 4: Feather — spatial distance from mask boundary ----------
+    if (feather > 0) {
+      // BFS outward from mask boundary into non-masked pixels
+      const fQueue = [];
+      const fDist = new Float32Array(total).fill(-1);
+
+      // Seed: non-masked pixels adjacent to masked pixels
+      for (let pi = 0; pi < total; pi++) {
+        if (mask[pi]) continue;
+        const x = pi % w;
+        const y = (pi - x) / w;
+        let borderNeighbor = false;
+        if (x > 0 && mask[pi - 1]) borderNeighbor = true;
+        else if (x < w - 1 && mask[pi + 1]) borderNeighbor = true;
+        else if (y > 0 && mask[pi - w]) borderNeighbor = true;
+        else if (y < h - 1 && mask[pi + w]) borderNeighbor = true;
+        if (borderNeighbor) {
+          fDist[pi] = 1;
+          fQueue.push(pi);
+        }
+      }
+
+      let fHead = 0;
+      while (fHead < fQueue.length) {
+        const pi = fQueue[fHead++];
+        const d = fDist[pi];
+        if (d >= feather) continue;
+        const x = pi % w;
+        const y = (pi - x) / w;
+        const nb = [];
+        if (x > 0) nb.push(pi - 1);
+        if (x < w - 1) nb.push(pi + 1);
+        if (y > 0) nb.push(pi - w);
+        if (y < h - 1) nb.push(pi + w);
+        for (const npi of nb) {
+          if (mask[npi] || fDist[npi] >= 0) continue;
+          fDist[npi] = d + 1;
+          fQueue.push(npi);
+        }
+      }
+
+      // Apply graduated alpha
+      for (let pi = 0; pi < total; pi++) {
+        if (fDist[pi] > 0) {
+          const t = fDist[pi] / feather; // 0 at boundary → 1 at feather distance
+          data[pi * 4 + 3] = Math.round(data[pi * 4 + 3] * t);
+        }
+      }
+    }
+
+    // ---------- Step 5: Defringe — shift border pixels away from removed color ----------
+    if (defringe > 0) {
+      const strength = defringe / 100;
+      // Find non-masked pixels adjacent to the final mask (including feathered zone)
+      const dfQueue = [];
+      const dfDist = new Int16Array(total).fill(-1);
+      const DEFRINGE_RADIUS = Math.max(1, Math.round(defringe / 10));
+
+      for (let pi = 0; pi < total; pi++) {
+        if (data[pi * 4 + 3] === 0) continue; // skip fully transparent
+        const x = pi % w;
+        const y = (pi - x) / w;
+        let nearMask = false;
+        if (x > 0 && data[(pi - 1) * 4 + 3] === 0) nearMask = true;
+        else if (x < w - 1 && data[(pi + 1) * 4 + 3] === 0) nearMask = true;
+        else if (y > 0 && data[(pi - w) * 4 + 3] === 0) nearMask = true;
+        else if (y < h - 1 && data[(pi + w) * 4 + 3] === 0) nearMask = true;
+        if (nearMask) {
+          dfDist[pi] = 0;
+          dfQueue.push(pi);
+        }
+      }
+
+      // BFS outward up to DEFRINGE_RADIUS
+      let dfHead = 0;
+      while (dfHead < dfQueue.length) {
+        const pi = dfQueue[dfHead++];
+        const d = dfDist[pi];
+        if (d >= DEFRINGE_RADIUS) continue;
+        const x = pi % w;
+        const y = (pi - x) / w;
+        const nb = [];
+        if (x > 0) nb.push(pi - 1);
+        if (x < w - 1) nb.push(pi + 1);
+        if (y > 0) nb.push(pi - w);
+        if (y < h - 1) nb.push(pi + w);
+        for (const npi of nb) {
+          if (dfDist[npi] >= 0 || data[npi * 4 + 3] === 0) continue;
+          dfDist[npi] = d + 1;
+          dfQueue.push(npi);
+        }
+      }
+
+      // Shift each border pixel's color away from the removed color
+      const bgLum = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
+      for (let qi = 0; qi < dfQueue.length; qi++) {
+        const pi = dfQueue[qi];
+        const d = dfDist[pi];
+        const falloff = strength * (1 - d / (DEFRINGE_RADIUS + 1));
+        const i = pi * 4;
+        data[i]     = Math.max(0, Math.min(255, Math.round(data[i]     - (color.r - bgLum) * falloff)));
+        data[i + 1] = Math.max(0, Math.min(255, Math.round(data[i + 1] - (color.g - bgLum) * falloff)));
+        data[i + 2] = Math.max(0, Math.min(255, Math.round(data[i + 2] - (color.b - bgLum) * falloff)));
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  /**
    * Set a local upload for a non-base image field (frame, mask, overlay, background)
    */
   async _setLocalUpload(fieldName, file, rootEl) {
@@ -928,7 +1379,7 @@ class TokenFramerDialog extends FormApplication {
 
       const input = rootEl.querySelector(`input[name="${fieldName}"]`);
       if (input) {
-        input.value = `[Uploaded: ${file.name}]`;
+        input.value = game.i18n.format('TOKEN-FRAMER.Config.UploadedLabel', { name: file.name });
         input.title = file.name;
         input.readOnly = true;
       }
@@ -984,8 +1435,8 @@ class TokenFramerDialog extends FormApplication {
     };
     const getSelectValue = (name) => rootEl.querySelector(`select[name="${name}"]`)?.value ?? '';
     const getChecked = (name) => rootEl.querySelector(`input[name="${name}"]`)?.checked ?? false;
-    const getNumber = (name, fallback) => parseFloat(getValue(name)) || fallback;
-    const getInt = (name, fallback) => parseInt(getValue(name)) || fallback;
+    const getNumber = (name, fallback) => { const v = parseFloat(getValue(name)); return isNaN(v) ? fallback : v; };
+    const getInt = (name, fallback) => { const v = parseInt(getValue(name)); return isNaN(v) ? fallback : v; };
 
     return {
       enabled: true,
@@ -1018,7 +1469,14 @@ class TokenFramerDialog extends FormApplication {
       popOutRotation: getInt('popOutRotation', 0),
       popOutOffsetX: getInt('popOutOffsetX', 0),
       popOutOffsetY: getInt('popOutOffsetY', 0),
-      popOutPreview: getChecked('popOutPreview')
+      popOutPreview: getChecked('popOutPreview'),
+      baseOpacity: getNumber('baseOpacity', 1.0),
+      frameOpacity: getNumber('frameOpacity', 1.0),
+      overlayOpacity: getNumber('overlayOpacity', 1.0),
+      frameTintColor: getChecked('frameTintEnabled') ? (getValue('frameTintColor') || '') : '',
+      overlayTintColor: getChecked('overlayTintEnabled') ? (getValue('overlayTintColor') || '') : '',
+      baseBrightness: getNumber('baseBrightness', 1.0),
+      baseContrast: getNumber('baseContrast', 1.0)
     };
   }
 

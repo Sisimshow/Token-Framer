@@ -39,7 +39,8 @@ The dialog has a large preview on the left and settings on the right.
 **Actions:**
 - **Sync Base Image from Image Path** — Pull the current image from the token's Image Path field
 - **Reset to Original** — Disable framing and revert to the base image
-- **Save As...** — Export the composited image as a WebP file to a folder you choose
+- **Save to PC** — Download the composited image as a WebP file directly to your computer
+- **Save to Foundry** — Export the composited image to a server folder you choose
 - **Quick Save** — Save to the preset Quick Save folder, update the token's image, and detach auto-framing
 - **Apply Auto-Frame** — Enable Token Framer to manage this token with automatic framing on art swaps
 
@@ -85,6 +86,22 @@ You can open Token Framer directly from any actor sheet's header menu (the icon 
 
 ## Advanced Features
 
+### Base Image Settings
+
+Control how the base image is composited:
+- **Base Scale & Offset** — Scale (0.5–1.5) and X/Y pixel offset for the base image
+- **Base Opacity** — Fade the base image from fully transparent to fully opaque
+- **Brightness & Contrast** — Adjust the base image's luminosity and contrast (1.0 = no change). Useful for darkening bright art or punching up flat colors
+- **Base Over Frame** — Draw the base image on top of the frame instead of behind it (see Frame Settings)
+
+### Frame Settings
+
+Control the frame overlay layer:
+- **Frame Scale & Offset** — Scale (0.5–1.5) and X/Y pixel offset for the frame
+- **Frame Opacity** — Fade the frame from fully transparent to fully opaque
+- **Tint Color** — Apply a color tint to the frame using a multiply blend, which preserves light/dark detail in the frame art. Enable with the checkbox and choose a color using the swatch or hex input
+- **Base Over Frame** — Toggle to draw the base image on top of the frame instead of behind it
+
 ### Mask Settings
 
 Control the shape used to clip the base image:
@@ -102,20 +119,40 @@ Create a 3D-style effect where part of the base image extends above the frame. W
 
 ### Overlay / Decoration
 
-An optional image drawn on top of everything — useful for badges, icons, or a second frame layer. Configurable scale and offset.
+An optional image drawn on top of everything — useful for badges, icons, or a second frame layer.
+- **Overlay Scale & Offset** — Scale (0.5–1.5) and X/Y pixel offset
+- **Overlay Opacity** — Fade the overlay from fully transparent to fully opaque
+- **Tint Color** — Apply a color tint to the overlay using a multiply blend, same as the frame tint
+
+### Background Color Removal
+
+Remove a solid-color background from the base image directly within Token Framer — no external editing software needed. This is especially useful for anime/manga art with flat white or colored backgrounds.
+
+**How to use:**
+1. Click anywhere on the preview image to sample a background color (the cursor becomes a crosshair). The color removal checkbox is automatically enabled.
+2. Alternatively, enable the checkbox manually and pick a color using the swatch or hex input.
+3. Adjust the sliders to refine the result:
+
+| Control | Description |
+|---------|-------------|
+| **Color Threshold** | How similar a pixel must be to the target color to be removed. 0 = exact match only, higher = more forgiving. Start around 20–40. |
+| **Feather** | Softens the removal edge by making pixels just outside the boundary gradually transparent instead of hard-cut. Good for anti-aliased edges. |
+| **Grow** | Expands the removed area by N pixels to eat into remaining color fringe at the boundary. |
+| **Defringe** | Shifts border pixels' colors away from the removed background color to clean up color halos left behind. |
+| **Edges Only (Flood Fill)** | Only removes matching pixels connected to the image border, like a paint-bucket fill from the outside in. Safer for art with interior areas that match the background color. |
+
+Color removal is non-destructive — the original image is preserved in memory and used as the source each time you change a setting. Unchecking the **Enable Color Removal** checkbox instantly restores the original.
+
+> **Tip:** For best results, enable **Edges Only**, set a moderate threshold (25–40), then fine-tune Feather (1–3) and Defringe (10–20) to clean up the edge.
 
 ### Background
 
 - **Solid Color** — Enable a background color behind the base image (use the color picker on the preview to sample colors)
 - **Background Image** — Optional image for the background layer, with its own scale and offset
 
-### Base Over Frame
-
-Toggle to draw the base image on top of the frame instead of behind it.
-
 ### Scale & Offset Controls
 
-All layers (base, frame, mask, overlay, background) have independent scale (0.5–1.5) and pixel offset (X/Y) controls. Number inputs support mouse wheel scrolling for quick adjustments.
+All layers (base, frame, mask, overlay, pop-out, background) have independent scale (0.5–1.5) and pixel offset (X/Y) controls. Number inputs support mouse wheel scrolling for quick adjustments.
 
 ## Token Variant Art Integration
 
@@ -155,6 +192,11 @@ Access via **Settings > Module Settings > Token Framer**:
 | **Default Pop Out Arc** | 180 | Default arc size for the pop-out effect |
 | **Default Pop Out Rotation** | 0 | Default rotation for the pop-out effect |
 | **Default Background Image Scale** | 1.0 | Default scale for the background image |
+| **Default BG Removal: Color Threshold** | 25 | Default color threshold for background removal |
+| **Default BG Removal: Feather** | 2 | Default feather distance (pixels) for removal edges |
+| **Default BG Removal: Grow** | 1 | Default pixel expansion beyond the color-matched boundary |
+| **Default BG Removal: Defringe** | 15 | Default defringe strength for color halo cleanup |
+| **Default BG Removal: Edges Only** | Off | Default for flood-fill-from-border removal mode |
 | **Debug Mode** | Off | Enable console logging for troubleshooting |
 | **Regenerate Cache** | — | Regenerate cached images for all actors/tokens in the world |
 

@@ -185,7 +185,10 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
     bgImage = '', bgImageScale = 1.0, bgImageOffsetX = 0, bgImageOffsetY = 0,
     overlayImage = '', overlayScale = 1.0, overlayOffsetX = 0, overlayOffsetY = 0,
     popOutEnabled = false, popOutDegrees = 180, popOutRotation = 0,
-    popOutOffsetX = 0, popOutOffsetY = 0
+    popOutOffsetX = 0, popOutOffsetY = 0,
+    baseOpacity = 1.0, frameOpacity = 1.0, overlayOpacity = 1.0,
+    frameTintColor = '', overlayTintColor = '',
+    baseBrightness = 1.0, baseContrast = 1.0
   } = frameData;
 
   const canvas = document.createElement('canvas');
@@ -238,9 +241,14 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
     }
   };
 
+  // Build CSS filter string for base image brightness/contrast
+  const baseFilter = (baseBrightness !== 1.0 || baseContrast !== 1.0)
+    ? `brightness(${baseBrightness}) contrast(${baseContrast})` : 'none';
+
   // Helper function to draw the masked base image
   const drawMaskedBase = () => {
     ctx.save();
+    ctx.globalAlpha = baseOpacity;
     
     if (maskImg) {
       // Custom mask image - ignore maskShape
@@ -250,7 +258,9 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
       const baseCtx = baseCanvas.getContext('2d');
       
       drawBackground(baseCtx);
+      if (baseFilter !== 'none') baseCtx.filter = baseFilter;
       baseCtx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+      if (baseFilter !== 'none') baseCtx.filter = 'none';
       
       const maskCanvas = document.createElement('canvas');
       maskCanvas.width = size;
@@ -277,29 +287,56 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
       applyMaskShape(ctx, maskShape, centerX, centerY, radius, maskOffsetX, maskOffsetY);
       
       drawBackground(ctx);
+      if (baseFilter !== 'none') ctx.filter = baseFilter;
       ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+      if (baseFilter !== 'none') ctx.filter = 'none';
     }
     
+    ctx.globalAlpha = 1.0;
     ctx.restore();
+  };
+
+  // Helper to draw an image with an optional tint color (multiply blend preserves detail)
+  const drawWithTint = (targetCtx, img, x, y, w, h, tintColor) => {
+    if (!tintColor) {
+      targetCtx.drawImage(img, x, y, w, h);
+      return;
+    }
+    const off = document.createElement('canvas');
+    off.width = size;
+    off.height = size;
+    const offCtx = off.getContext('2d');
+    // Draw the original image
+    offCtx.drawImage(img, x, y, w, h);
+    // Multiply the tint color over it (preserves light/dark detail)
+    offCtx.globalCompositeOperation = 'multiply';
+    offCtx.fillStyle = tintColor;
+    offCtx.fillRect(0, 0, size, size);
+    // Restore original alpha (multiply affects alpha too)
+    offCtx.globalCompositeOperation = 'destination-in';
+    offCtx.drawImage(img, x, y, w, h);
+    targetCtx.drawImage(off, 0, 0);
   };
 
   // Helper function to draw the frame
   const drawFrame = () => {
+    ctx.save();
+    ctx.globalAlpha = frameOpacity;
     const frameSize = size * frameScale;
-    ctx.drawImage(frameImg, centerX - frameSize / 2 + frameOffsetX, centerY - frameSize / 2 + frameOffsetY, frameSize, frameSize);
+    drawWithTint(ctx, frameImg, centerX - frameSize / 2 + frameOffsetX, centerY - frameSize / 2 + frameOffsetY, frameSize, frameSize, frameTintColor);
+    ctx.globalAlpha = 1.0;
+    ctx.restore();
   };
 
   // Helper function to draw the overlay (always on top)
   const drawOverlay = () => {
     if (overlayImg) {
+      ctx.save();
+      ctx.globalAlpha = overlayOpacity;
       const overlaySize = size * overlayScale;
-      ctx.drawImage(
-        overlayImg,
-        centerX - overlaySize / 2 + overlayOffsetX,
-        centerY - overlaySize / 2 + overlayOffsetY,
-        overlaySize,
-        overlaySize
-      );
+      drawWithTint(ctx, overlayImg, centerX - overlaySize / 2 + overlayOffsetX, centerY - overlaySize / 2 + overlayOffsetY, overlaySize, overlaySize, overlayTintColor);
+      ctx.globalAlpha = 1.0;
+      ctx.restore();
     }
   };
 
@@ -307,6 +344,7 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
   const drawPopOut = () => {
     if (!popOutEnabled || popOutDegrees <= 0) return;
     ctx.save();
+    ctx.globalAlpha = baseOpacity;
     const halfAngle = (popOutDegrees / 2) * Math.PI / 180;
     const centerAngle = (popOutRotation - 90) * Math.PI / 180;
     const popCenterX = centerX + popOutOffsetX;
@@ -316,16 +354,47 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
     ctx.arc(popCenterX, popCenterY, size, centerAngle - halfAngle, centerAngle + halfAngle);
     ctx.closePath();
     ctx.clip();
+    // Redraw background in the wedge (it was excluded along with the masked base)
+    drawBackground(ctx);
+    if (baseFilter !== 'none') ctx.filter = baseFilter;
     ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
+    if (baseFilter !== 'none') ctx.filter = 'none';
+    ctx.globalAlpha = 1.0;
     ctx.restore();
   };
 
+  // Helper: build the pop-out wedge clip path (used to exclude it from masked base)
+  const popOutHalfAngle = (popOutDegrees / 2) * Math.PI / 180;
+  const popOutCenterAngle = (popOutRotation - 90) * Math.PI / 180;
+  const popCX = centerX + popOutOffsetX;
+  const popCY = centerY + popOutOffsetY;
+
   // Draw in order based on baseOverFrame setting
+  // When pop-out is enabled, exclude the wedge from drawMaskedBase via even-odd clip
+  // so the base isn't drawn twice (masked + pop-out) in that zone.
+  const needsWedgeExclusion = popOutEnabled && popOutDegrees > 0;
+
+  const drawMaskedBaseExcluded = () => {
+    if (needsWedgeExclusion) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, size, size);
+      ctx.moveTo(popCX, popCY);
+      ctx.arc(popCX, popCY, size, popOutCenterAngle - popOutHalfAngle, popOutCenterAngle + popOutHalfAngle);
+      ctx.closePath();
+      ctx.clip('evenodd');
+    }
+    drawMaskedBase();
+    if (needsWedgeExclusion) {
+      ctx.restore();
+    }
+  };
+
   if (baseOverFrame) {
     drawFrame();
-    drawMaskedBase();
+    drawMaskedBaseExcluded();
   } else {
-    drawMaskedBase();
+    drawMaskedBaseExcluded();
     drawFrame();
   }
   

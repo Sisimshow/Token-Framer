@@ -73,6 +73,26 @@
         "Name": "Default Background Image Scale",
         "Hint": "Default scale for the background image (0.5 to 1.5)."
       },
+      "DefaultColorRemoveThreshold": {
+        "Name": "Default BG Removal: Color Threshold",
+        "Hint": "Default color threshold for background color removal (0 = exact match, higher = more forgiving)."
+      },
+      "DefaultColorRemoveFeather": {
+        "Name": "Default BG Removal: Feather",
+        "Hint": "Default feather distance (pixels) to soften the edge of removed backgrounds."
+      },
+      "DefaultColorRemoveGrow": {
+        "Name": "Default BG Removal: Grow",
+        "Hint": "Default number of pixels to expand the removal area beyond the color-matched boundary."
+      },
+      "DefaultColorRemoveDefringe": {
+        "Name": "Default BG Removal: Defringe",
+        "Hint": "Default defringe strength to clean up color halos left after background removal."
+      },
+      "DefaultColorRemoveEdgesOnly": {
+        "Name": "Default BG Removal: Edges Only",
+        "Hint": "When enabled, only removes background pixels connected to the image border (flood fill). Safer for complex art but can miss interior pockets."
+      },
       "QuickSaveFolder": {
         "Name": "Quick Save Folder",
         "Hint": "Folder for Quick Save images. Default: assets/tokens."
@@ -149,6 +169,35 @@
       "QuickSave": "Quick Save",
       "QuickSaveHint": "Save image to the preset folder, set it as the token's image, and disable auto-framing.",
       "QuickSaveDisabledHint": "Disable Auto-Frame first to use Quick Save.",
+      "BaseOpacity": "Base Opacity",
+      "BaseOpacityHint": "Opacity of the base token image (0 = invisible, 1 = fully opaque).",
+      "BaseBrightness": "Base Brightness",
+      "BaseBrightnessHint": "Brightness adjustment for the base image (1.0 = normal).",
+      "BaseContrast": "Base Contrast",
+      "BaseContrastHint": "Contrast adjustment for the base image (1.0 = normal).",
+      "FrameOpacity": "Frame Opacity",
+      "FrameOpacityHint": "Opacity of the frame overlay (0 = invisible, 1 = fully opaque).",
+      "FrameTintColor": "Tint Color",
+      "FrameTintHint": "Apply a flat color tint to the frame image.",
+      "OverlayOpacity": "Overlay Opacity",
+      "OverlayOpacityHint": "Opacity of the overlay image (0 = invisible, 1 = fully opaque).",
+      "OverlayTintColor": "Tint Color",
+      "OverlayTintHint": "Apply a flat color tint to the overlay image.",
+      "ColorRemove": "Background Color Removal",
+      "ColorRemoveHint": "Click anywhere on the preview image to sample a background color, or pick one using the swatch. Check the box to enable removal.",
+      "UploadedLabel": "[Uploaded: {name}]",
+      "ColorRemoveEnable": "Enable Color Removal",
+      "ColorRemoveColor": "Color",
+      "ColorRemoveThreshold": "Color Threshold",
+      "ColorRemoveThresholdHint": "How similar a pixel must be to the picked color to be removed (0 = exact match, higher = more forgiving).",
+      "ColorRemoveFeather": "Feather",
+      "ColorRemoveFeatherHint": "Softens the edge between removed and kept pixels. Pixels just beyond the threshold get partial transparency instead of a hard cutoff.",
+      "ColorRemoveGrow": "Grow",
+      "ColorRemoveGrowHint": "Expands the removal area by this many pixels beyond the color-matched boundary, eating into any remaining color fringe.",
+      "ColorRemoveDefringe": "Defringe",
+      "ColorRemoveDefringeHint": "Shifts border pixels away from the removed color to clean up color halos. Higher values apply a stronger correction.",
+      "ColorRemoveEdgesOnly": "Edges Only (Flood Fill)",
+      "ColorRemoveEdgesOnlyHint": "Only remove matching pixels connected to the image border, like a paint-bucket fill from the outside in. Uncheck to remove all matching pixels everywhere.",
       "PopOut": "Pop Out",
       "PopOutEnable": "Enable Pop Out",
       "PopOutHint": "Draws part of the base image above the frame, creating a 'pop out' effect. Works best with transparent-background base images.",

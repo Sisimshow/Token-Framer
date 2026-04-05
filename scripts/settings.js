@@ -192,6 +192,60 @@ export function registerSettings() {
     default: 1.0
   });
 
+  // Default color removal threshold
+  game.settings.register(MODULE_ID, 'defaultColorRemoveThreshold', {
+    name: 'TOKEN-FRAMER.Settings.DefaultColorRemoveThreshold.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultColorRemoveThreshold.Hint',
+    scope: 'world',
+    config: true,
+    type: Number,
+    range: { min: 0, max: 100, step: 1 },
+    default: 25
+  });
+
+  // Default color removal feather
+  game.settings.register(MODULE_ID, 'defaultColorRemoveFeather', {
+    name: 'TOKEN-FRAMER.Settings.DefaultColorRemoveFeather.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultColorRemoveFeather.Hint',
+    scope: 'world',
+    config: true,
+    type: Number,
+    range: { min: 0, max: 50, step: 1 },
+    default: 2
+  });
+
+  // Default color removal grow
+  game.settings.register(MODULE_ID, 'defaultColorRemoveGrow', {
+    name: 'TOKEN-FRAMER.Settings.DefaultColorRemoveGrow.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultColorRemoveGrow.Hint',
+    scope: 'world',
+    config: true,
+    type: Number,
+    range: { min: 0, max: 10, step: 1 },
+    default: 1
+  });
+
+  // Default color removal defringe
+  game.settings.register(MODULE_ID, 'defaultColorRemoveDefringe', {
+    name: 'TOKEN-FRAMER.Settings.DefaultColorRemoveDefringe.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultColorRemoveDefringe.Hint',
+    scope: 'world',
+    config: true,
+    type: Number,
+    range: { min: 0, max: 100, step: 1 },
+    default: 15
+  });
+
+  // Default color removal edges only
+  game.settings.register(MODULE_ID, 'defaultColorRemoveEdgesOnly', {
+    name: 'TOKEN-FRAMER.Settings.DefaultColorRemoveEdgesOnly.Name',
+    hint: 'TOKEN-FRAMER.Settings.DefaultColorRemoveEdgesOnly.Hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false
+  });
+
   // Debug mode setting
   game.settings.register(MODULE_ID, 'debugMode', {
     name: 'TOKEN-FRAMER.Settings.DebugMode.Name',
