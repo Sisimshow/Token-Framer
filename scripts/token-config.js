@@ -1858,7 +1858,13 @@ class TokenFramerDialog extends FormApplication {
     }
 
     if (isDataUrl(this.baseImagePath) || this._localUploads.size > 0) {
-      ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.LocalImageAutoFrame'));
+      // Distinguish between color removal (original is a server path) and a truly local upload
+      const colorRemovalActive = isDataUrl(this.baseImagePath) && this._originalBaseImagePath && !isDataUrl(this._originalBaseImagePath);
+      if (colorRemovalActive) {
+        ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.ColorRemovalAutoFrame'));
+      } else {
+        ui.notifications.warn(game.i18n.localize('TOKEN-FRAMER.Notifications.LocalImageAutoFrame'));
+      }
       return;
     }
 

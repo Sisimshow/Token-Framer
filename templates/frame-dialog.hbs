@@ -18,14 +18,16 @@
         </div>
         <img class="tfl-preview-image" src="" alt="{{localize 'TOKEN-FRAMER.Config.Preview'}}">
       </div>
-      <button type="button" class="tfl-refresh-button" title="{{localize 'TOKEN-FRAMER.Config.RefreshHint'}}">
-        <i class="fas fa-sync-alt"></i>
-        {{localize "TOKEN-FRAMER.Config.RefreshFromToken"}}
-      </button>
-      <button type="button" class="tfl-restore-button tfl-preview-action" title="{{localize 'TOKEN-FRAMER.Config.ResetHint'}}">
-        <i class="fas fa-undo"></i>
-        {{localize "TOKEN-FRAMER.Config.RestoreOriginal"}}
-      </button>
+      <div class="tfl-preview-actions">
+        <button type="button" class="tfl-refresh-button" title="{{localize 'TOKEN-FRAMER.Config.RefreshHint'}}">
+          <i class="fas fa-sync-alt"></i>
+          {{localize "TOKEN-FRAMER.Config.RefreshFromToken"}}
+        </button>
+        <button type="button" class="tfl-restore-button" title="{{localize 'TOKEN-FRAMER.Config.ResetHint'}}">
+          <i class="fas fa-undo"></i>
+          {{localize "TOKEN-FRAMER.Config.RestoreOriginal"}}
+        </button>
+      </div>
     </div>
 
     <!-- Right Column: Settings -->
@@ -171,15 +173,18 @@
             </div>
           </div>
 
-          <div class="tfl-form-group tfl-tint-row">
-            <label>{{localize "TOKEN-FRAMER.Config.FrameTintColor"}}</label>
-            <div class="tfl-form-fields">
-              <input type="checkbox" name="frameTintEnabled" id="tfl-frame-tint-enabled" class="tfl-tint-checkbox" {{frameTintEnabled}}>
+          <div class="tfl-form-group tfl-bg-row">
+            <div class="tfl-bg-enable">
+              <input type="checkbox" name="frameTintEnabled" id="tfl-frame-tint-enabled" {{frameTintEnabled}}>
+              <label for="tfl-frame-tint-enabled">{{localize "TOKEN-FRAMER.Config.FrameTintColor"}}</label>
+            </div>
+            <div class="tfl-bg-color">
+              <label>{{localize "TOKEN-FRAMER.Config.BackgroundColor"}}</label>
               <input type="color" name="frameTintColor" value="{{frameTintColor}}" class="tfl-color-picker">
               <input type="text" name="frameTintColorText" value="{{frameTintColor}}" class="tfl-color-text" placeholder="#FF0000">
             </div>
-            <p class="hint">{{localize "TOKEN-FRAMER.Config.FrameTintHint"}}</p>
           </div>
+          <p class="hint">{{localize "TOKEN-FRAMER.Config.FrameTintHint"}}</p>
         </div>
       </div>
 
@@ -298,15 +303,18 @@
             </div>
           </div>
 
-          <div class="tfl-form-group tfl-tint-row">
-            <label>{{localize "TOKEN-FRAMER.Config.OverlayTintColor"}}</label>
-            <div class="tfl-form-fields">
-              <input type="checkbox" name="overlayTintEnabled" id="tfl-overlay-tint-enabled" class="tfl-tint-checkbox" {{overlayTintEnabled}}>
+          <div class="tfl-form-group tfl-bg-row">
+            <div class="tfl-bg-enable">
+              <input type="checkbox" name="overlayTintEnabled" id="tfl-overlay-tint-enabled" {{overlayTintEnabled}}>
+              <label for="tfl-overlay-tint-enabled">{{localize "TOKEN-FRAMER.Config.OverlayTintColor"}}</label>
+            </div>
+            <div class="tfl-bg-color">
+              <label>{{localize "TOKEN-FRAMER.Config.BackgroundColor"}}</label>
               <input type="color" name="overlayTintColor" value="{{overlayTintColor}}" class="tfl-color-picker">
               <input type="text" name="overlayTintColorText" value="{{overlayTintColor}}" class="tfl-color-text" placeholder="#FF0000">
             </div>
-            <p class="hint">{{localize "TOKEN-FRAMER.Config.OverlayTintHint"}}</p>
           </div>
+          <p class="hint">{{localize "TOKEN-FRAMER.Config.OverlayTintHint"}}</p>
         </div>
       </div>
 

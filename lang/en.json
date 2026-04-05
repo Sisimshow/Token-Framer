@@ -10,6 +10,7 @@
       "NoBaseImage": "Please set a base image first.",
       "NoFrameImage": "Please set a frame image first.",
       "LocalImageAutoFrame": "Auto-Frame requires a server image. Use Save As or Quick Save for uploaded images.",
+      "ColorRemovalAutoFrame": "Background color removal produces a temporary image that cannot be used with Auto-Frame. Use Quick Save or Save to Foundry to save the result as a server file first.",
       "ImageSaved": "Image saved to: {path}",
       "QuickSaved": "Token saved to: {path}",
       "SaveImageFailed": "Failed to save image. Check console for details.",
