@@ -526,6 +526,9 @@ class TokenFramerDialog extends FormApplication {
     this._lastFocusedImageField = 'baseImage';
     this._originalBaseImagePath = '';
     this._lastPickedColor = null; // {r, g, b} of last sampled pixel
+    this._zoomLevel = 1;
+    this._panX = 0;
+    this._panY = 0;
   }
 
   static get defaultOptions() {
@@ -701,6 +704,83 @@ class TokenFramerDialog extends FormApplication {
         if (file && file.type.startsWith('image/')) {
           this._setLocalImage(file, rootEl);
         }
+      });
+    }
+
+    // Preview zoom & pan
+    if (previewWrapper) {
+      const previewImg = rootEl.querySelector('.tfl-preview-image');
+      const zoomBadge = rootEl.querySelector('.tfl-zoom-badge');
+
+      // Scroll wheel to zoom, centered on cursor
+      previewWrapper.addEventListener('wheel', (e) => {
+        if (!previewImg || previewImg.style.display === 'none') return;
+        e.preventDefault();
+
+        const rect = previewWrapper.getBoundingClientRect();
+        const cursorX = e.clientX - rect.left;
+        const cursorY = e.clientY - rect.top;
+
+        const prevZoom = this._zoomLevel;
+        const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+        this._zoomLevel = Math.min(8, Math.max(1, this._zoomLevel * factor));
+
+        if (this._zoomLevel === 1) {
+          this._panX = 0;
+          this._panY = 0;
+        } else {
+          // Adjust pan so the point under the cursor stays fixed
+          const scale = this._zoomLevel / prevZoom;
+          this._panX = cursorX - scale * (cursorX - this._panX);
+          this._panY = cursorY - scale * (cursorY - this._panY);
+        }
+
+        this._clampPan(previewWrapper, previewImg);
+        this._applyZoomTransform(previewImg, zoomBadge, previewWrapper);
+      }, { passive: false });
+
+      // Drag to pan
+      let isPanning = false;
+      let panStartX = 0;
+      let panStartY = 0;
+      let panStartPanX = 0;
+      let panStartPanY = 0;
+
+      previewWrapper.addEventListener('mousedown', (e) => {
+        if (e.button !== 0 || this._zoomLevel <= 1) return;
+        isPanning = true;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+        panStartPanX = this._panX;
+        panStartPanY = this._panY;
+        previewWrapper.classList.add('tfl-panning');
+        e.preventDefault();
+      });
+
+      this._panMoveHandler = (e) => {
+        if (!isPanning) return;
+        this._panX = panStartPanX + (e.clientX - panStartX);
+        this._panY = panStartPanY + (e.clientY - panStartY);
+        this._clampPan(previewWrapper, previewImg);
+        this._applyZoomTransform(previewImg, zoomBadge, previewWrapper);
+      };
+      window.addEventListener('mousemove', this._panMoveHandler);
+
+      this._panUpHandler = () => {
+        if (!isPanning) return;
+        isPanning = false;
+        previewWrapper.classList.remove('tfl-panning');
+      };
+      window.addEventListener('mouseup', this._panUpHandler);
+
+      // Double-click to reset zoom
+      previewWrapper.addEventListener('dblclick', (e) => {
+        if (!previewImg || previewImg.style.display === 'none') return;
+        e.preventDefault();
+        this._zoomLevel = 1;
+        this._panX = 0;
+        this._panY = 0;
+        this._applyZoomTransform(previewImg, zoomBadge, previewWrapper);
       });
     }
 
@@ -1005,37 +1085,6 @@ class TokenFramerDialog extends FormApplication {
       });
     }
 
-    // Click preview image to sample a color into the removal color picker
-    const previewImg = rootEl.querySelector('.tfl-preview-image');
-    if (previewImg) {
-      previewImg.addEventListener('click', async (e) => {
-        const rect = previewImg.getBoundingClientRect();
-        const normX = (e.clientX - rect.left) / rect.width;
-        const normY = (e.clientY - rect.top) / rect.height;
-        try {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = this._originalBaseImagePath || this.baseImagePath; });
-          const canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          const sampleCtx = canvas.getContext('2d');
-          sampleCtx.drawImage(img, 0, 0);
-          const imageData = sampleCtx.getImageData(0, 0, canvas.width, canvas.height);
-          const sx = Math.max(0, Math.min(canvas.width - 1, Math.round(normX * canvas.width)));
-          const sy = Math.max(0, Math.min(canvas.height - 1, Math.round(normY * canvas.height)));
-          const idx = (sy * canvas.width + sx) * 4;
-          const r = imageData.data[idx], g = imageData.data[idx + 1], b = imageData.data[idx + 2];
-          const hexColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
-          if (colorRemoveColorPicker) colorRemoveColorPicker.value = hexColor;
-          if (colorRemoveColorText) colorRemoveColorText.value = hexColor;
-          if (colorRemoveEnabledCheckbox) colorRemoveEnabledCheckbox.checked = true;
-          reapplyColorRemoval();
-        } catch (err) {
-          console.error(`${MODULE_ID} | Color sample failed:`, err);
-        }
-      });
-    }
     if (colorRemoveThresholdRange) colorRemoveThresholdRange.addEventListener('change', reapplyColorRemoval);
     if (colorRemoveThresholdNum) colorRemoveThresholdNum.addEventListener('change', reapplyColorRemoval);
     // Also re-apply when feather, grow, or edges-only changes
@@ -1533,6 +1582,59 @@ class TokenFramerDialog extends FormApplication {
     previewDebounceTimer = setTimeout(() => {
       this._updatePreview(rootEl);
     }, PREVIEW_DEBOUNCE_MS);
+  }
+
+  /**
+   * Apply CSS transform for zoom/pan to the preview image and update badge
+   */
+  _applyZoomTransform(previewImg, zoomBadge, previewWrapper) {
+    if (!previewImg) return;
+    if (this._zoomLevel <= 1) {
+      previewImg.style.transform = '';
+      previewWrapper?.classList.remove('tfl-zoomed');
+      if (zoomBadge) zoomBadge.style.display = 'none';
+    } else {
+      previewImg.style.transform = `translate(${this._panX}px, ${this._panY}px) scale(${this._zoomLevel})`;
+      previewWrapper?.classList.add('tfl-zoomed');
+      if (zoomBadge) {
+        zoomBadge.textContent = `${this._zoomLevel.toFixed(1)}×`;
+        zoomBadge.style.display = '';
+      }
+    }
+  }
+
+  /**
+   * Clamp pan so the image doesn't leave the viewport
+   */
+  _clampPan(wrapper, img) {
+    if (!wrapper || !img || this._zoomLevel <= 1) return;
+    const wW = wrapper.clientWidth;
+    const wH = wrapper.clientHeight;
+    const iW = img.naturalWidth || img.clientWidth;
+    const iH = img.naturalHeight || img.clientHeight;
+    // The image is displayed fit-to-contain inside the wrapper; compute displayed size
+    const displayScale = Math.min(wW / iW, wH / iH, 1);
+    const dispW = iW * displayScale * this._zoomLevel;
+    const dispH = iH * displayScale * this._zoomLevel;
+    // Centering offset when image is smaller than wrapper at current zoom
+    const baseX = (wW - iW * displayScale) / 2;
+    const baseY = (wH - iH * displayScale) / 2;
+    // Pan limits: keep the image covering the wrapper area as much as possible
+    const minX = Math.min(0, wW - baseX - dispW);
+    const maxX = Math.max(0, -baseX);
+    const minY = Math.min(0, wH - baseY - dispH);
+    const maxY = Math.max(0, -baseY);
+    this._panX = Math.min(maxX, Math.max(minX, this._panX));
+    this._panY = Math.min(maxY, Math.max(minY, this._panY));
+  }
+
+  /**
+   * Clean up window-level event listeners
+   */
+  async close(options) {
+    if (this._panMoveHandler) window.removeEventListener('mousemove', this._panMoveHandler);
+    if (this._panUpHandler) window.removeEventListener('mouseup', this._panUpHandler);
+    return super.close(options);
   }
 
   /**

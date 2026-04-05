@@ -36,6 +36,8 @@ The dialog has a large preview on the left and settings on the right.
 
 **Collapsible Sections** — Additional settings for base image scale/offset, frame scale/offset, mask shape, overlay, pop-out effect, and background are available in expandable sections. See [Advanced Features](#advanced-features) for details.
 
+**Preview Zoom & Pan** — Scroll the mouse wheel over the preview to zoom in (up to 8×), then click-drag to pan around. Double-click to reset to 1×. The zoom level is shown in a badge in the corner. Zoom persists while you adjust settings so you can inspect details while tweaking sliders.
+
 **Actions:**
 - **Sync Base Image from Image Path** — Pull the current image from the token's Image Path field
 - **Reset to Original** — Disable framing and revert to the base image
@@ -129,9 +131,8 @@ An optional image drawn on top of everything — useful for badges, icons, or a 
 Remove a solid-color background from the base image directly within Token Framer — no external editing software needed. This is especially useful for anime/manga art with flat white or colored backgrounds.
 
 **How to use:**
-1. Click anywhere on the preview image to sample a background color (the cursor becomes a crosshair). The color removal checkbox is automatically enabled.
-2. Alternatively, enable the checkbox manually and pick a color using the swatch or hex input.
-3. Adjust the sliders to refine the result:
+1. Enable the **Enable Color Removal** checkbox and pick the background color using the color swatch or hex input.
+2. Adjust the sliders to refine the result:
 
 | Control | Description |
 |---------|-------------|

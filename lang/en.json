@@ -185,7 +185,7 @@
       "OverlayTintColor": "Tint Color",
       "OverlayTintHint": "Apply a flat color tint to the overlay image.",
       "ColorRemove": "Background Color Removal",
-      "ColorRemoveHint": "Click anywhere on the preview image to sample a background color, or pick one using the swatch. Check the box to enable removal.",
+      "ColorRemoveHint": "Pick a background color using the swatch or hex input, then check the box to enable removal. Adjust the sliders below to refine the result.",
       "UploadedLabel": "[Uploaded: {name}]",
       "ColorRemoveEnable": "Enable Color Removal",
       "ColorRemoveColor": "Color",
