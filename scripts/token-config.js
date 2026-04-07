@@ -213,13 +213,10 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
     popOutRotation = 0,
     popOutOffsetX = 0,
     popOutOffsetY = 0,
-    baseOpacity = 1.0,
     frameOpacity = 1.0,
     overlayOpacity = 1.0,
     frameTintColor = '',
-    overlayTintColor = '',
-    baseBrightness = 1.0,
-    baseContrast = 1.0
+    overlayTintColor = ''
   } = frameData;
 
   if (!baseImagePath || !frameImage) {
@@ -292,14 +289,9 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
       }
     };
 
-    // Build CSS filter string for base image brightness/contrast
-    const baseFilter = (baseBrightness !== 1.0 || baseContrast !== 1.0)
-      ? `brightness(${baseBrightness}) contrast(${baseContrast})` : 'none';
-
     // Helper function to draw the masked base image
     const drawMaskedBase = () => {
       ctx.save();
-      ctx.globalAlpha = baseOpacity;
       
       if (maskImg) {
         // Custom mask image - ignore maskShape
@@ -309,9 +301,7 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
         const baseCtx = baseCanvas.getContext('2d');
         
         drawBackground(baseCtx);
-        if (baseFilter !== 'none') baseCtx.filter = baseFilter;
         baseCtx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
-        if (baseFilter !== 'none') baseCtx.filter = 'none';
         
         const maskCanvas = document.createElement('canvas');
         maskCanvas.width = size;
@@ -345,12 +335,9 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
         applyMaskShape(ctx, maskShape, centerX, centerY, radius, scaledMaskOffsetX, scaledMaskOffsetY);
         
         drawBackground(ctx);
-        if (baseFilter !== 'none') ctx.filter = baseFilter;
         ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
-        if (baseFilter !== 'none') ctx.filter = 'none';
       }
 
-      ctx.globalAlpha = 1.0;
       ctx.restore();
     };
 
@@ -406,7 +393,6 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
     const drawPopOut = () => {
       if (!popOutEnabled || popOutDegrees <= 0) return;
       ctx.save();
-      ctx.globalAlpha = baseOpacity;
       const halfAngle = (popOutDegrees / 2) * Math.PI / 180;
       const centerAngle = (popOutRotation - 90) * Math.PI / 180;
       const popCenterX = centerX + scaledPopOutOffsetX;
@@ -416,47 +402,16 @@ async function generatePreview(baseImagePath, frameData, size = 200) {
       ctx.arc(popCenterX, popCenterY, size, centerAngle - halfAngle, centerAngle + halfAngle);
       ctx.closePath();
       ctx.clip();
-      // Redraw background in the wedge (it was excluded along with the masked base)
-      drawBackground(ctx);
-      if (baseFilter !== 'none') ctx.filter = baseFilter;
       ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
-      if (baseFilter !== 'none') ctx.filter = 'none';
-      ctx.globalAlpha = 1.0;
       ctx.restore();
     };
 
-    // Helper: build the pop-out wedge clip path (used to exclude it from masked base)
-    const popOutHalfAngle = (popOutDegrees / 2) * Math.PI / 180;
-    const popOutCenterAngle = (popOutRotation - 90) * Math.PI / 180;
-    const popCX = centerX + scaledPopOutOffsetX;
-    const popCY = centerY + scaledPopOutOffsetY;
-
     // Draw in order based on baseOverFrame setting
-    // When pop-out is enabled, exclude the wedge from drawMaskedBase via even-odd clip
-    // so the base isn't drawn twice (masked + pop-out) in that zone.
-    const needsWedgeExclusion = popOutEnabled && popOutDegrees > 0;
-
-    const drawMaskedBaseExcluded = () => {
-      if (needsWedgeExclusion) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, 0, size, size);
-        ctx.moveTo(popCX, popCY);
-        ctx.arc(popCX, popCY, size, popOutCenterAngle - popOutHalfAngle, popOutCenterAngle + popOutHalfAngle);
-        ctx.closePath();
-        ctx.clip('evenodd');
-      }
-      drawMaskedBase();
-      if (needsWedgeExclusion) {
-        ctx.restore();
-      }
-    };
-
     if (baseOverFrame) {
       drawFrame();
-      drawMaskedBaseExcluded();
+      drawMaskedBase();
     } else {
-      drawMaskedBaseExcluded();
+      drawMaskedBase();
       drawFrame();
     }
     
@@ -590,15 +545,12 @@ class TokenFramerDialog extends FormApplication {
       popOutOffsetX: frameData.popOutOffsetX ?? 0,
       popOutOffsetY: frameData.popOutOffsetY ?? 0,
       autoFrameEnabled: frameData.enabled ? true : false,
-      baseOpacity: frameData.baseOpacity ?? 1.0,
       frameOpacity: frameData.frameOpacity ?? 1.0,
       overlayOpacity: frameData.overlayOpacity ?? 1.0,
       frameTintColor: frameData.frameTintColor ?? '#FF0000',
       frameTintEnabled: frameData.frameTintColor ? 'checked' : '',
       overlayTintColor: frameData.overlayTintColor ?? '#FF0000',
       overlayTintEnabled: frameData.overlayTintColor ? 'checked' : '',
-      baseBrightness: frameData.baseBrightness ?? 1.0,
-      baseContrast: frameData.baseContrast ?? 1.0,
       colorRemoveColor: '#FFFFFF',
       colorRemoveThreshold: defaults.colorRemoveThreshold,
       colorRemoveFeather: defaults.colorRemoveFeather,
@@ -1519,13 +1471,10 @@ class TokenFramerDialog extends FormApplication {
       popOutOffsetX: getInt('popOutOffsetX', 0),
       popOutOffsetY: getInt('popOutOffsetY', 0),
       popOutPreview: getChecked('popOutPreview'),
-      baseOpacity: getNumber('baseOpacity', 1.0),
       frameOpacity: getNumber('frameOpacity', 1.0),
       overlayOpacity: getNumber('overlayOpacity', 1.0),
       frameTintColor: getChecked('frameTintEnabled') ? (getValue('frameTintColor') || '') : '',
-      overlayTintColor: getChecked('overlayTintEnabled') ? (getValue('overlayTintColor') || '') : '',
-      baseBrightness: getNumber('baseBrightness', 1.0),
-      baseContrast: getNumber('baseContrast', 1.0)
+      overlayTintColor: getChecked('overlayTintEnabled') ? (getValue('overlayTintColor') || '') : ''
     };
   }
 
@@ -1767,8 +1716,11 @@ class TokenFramerDialog extends FormApplication {
       const defaultFilename = `${generateCacheKey(basePath, framePath)}.webp`;
 
       // Open FilePicker to let user choose save location
+      const quickSaveFolder = game.settings.get(MODULE_ID, 'quickSaveFolder') || 'assets/tokens';
       new foundry.applications.apps.FilePicker.implementation({
         type: 'folder',
+        activeSource: 'data',
+        current: quickSaveFolder,
         callback: async (folderPath) => {
           if (!folderPath) return;
           

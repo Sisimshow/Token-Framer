@@ -92,8 +92,6 @@ You can open Token Framer directly from any actor sheet's header menu (the icon 
 
 Control how the base image is composited:
 - **Base Scale & Offset** — Scale (0.5–1.5) and X/Y pixel offset for the base image
-- **Base Opacity** — Fade the base image from fully transparent to fully opaque
-- **Brightness & Contrast** — Adjust the base image's luminosity and contrast (1.0 = no change). Useful for darkening bright art or punching up flat colors
 - **Base Over Frame** — Draw the base image on top of the frame instead of behind it (see Frame Settings)
 
 ### Frame Settings
