@@ -167,69 +167,7 @@
         </div>
       </div>
 
-      <!-- Mask Settings -->
-      <div class="tfl-collapsible" data-collapsed="true">
-        <div class="tfl-collapsible-header">
-          <i class="fas fa-chevron-down tfl-collapse-icon"></i>
-          <label>{{localize "TOKEN-FRAMER.Config.MaskSettings"}}</label>
-        </div>
-        <div class="tfl-collapsible-content">
-          <div class="tfl-form-group">
-            <label>{{localize "TOKEN-FRAMER.Config.MaskShape"}}</label>
-            <div class="tfl-form-fields">
-              <select name="maskShape">
-                <option value="circle" {{#if (eq maskShape "circle")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeCircle"}}</option>
-                <option value="square" {{#if (eq maskShape "square")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeSquare"}}</option>
-                <option value="hexagon" {{#if (eq maskShape "hexagon")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeHexagon"}}</option>
-                <option value="none" {{#if (eq maskShape "none")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeNone"}}</option>
-              </select>
-            </div>
-            <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskShapeHint"}}</p>
-          </div>
-
-          <!-- Mask Image (moved here) -->
-          <div class="tfl-form-group">
-            <label>{{localize "TOKEN-FRAMER.Config.MaskImage"}}</label>
-            <div class="tfl-form-fields">
-              <input type="text" name="maskImage" value="{{maskImage}}" placeholder="{{localize 'TOKEN-FRAMER.Config.MaskImagePlaceholder'}}">
-              <button type="button" class="tfl-icon-button tfl-file-picker" data-target="maskImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
-                <i class="fas fa-file-import"></i>
-              </button>
-              <button type="button" class="tfl-icon-button tfl-upload-button" data-target="maskImage" title="{{localize 'TOKEN-FRAMER.Config.UploadFromPC'}}">
-                <i class="fas fa-upload"></i>
-              </button>
-            </div>
-            <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskImageHint"}}</p>
-          </div>
-
-          <div class="tfl-form-group">
-            <label>{{localize "TOKEN-FRAMER.Config.MaskScale"}}</label>
-            <div class="tfl-form-fields">
-              <input type="range" name="maskSize" value="{{maskSize}}" min="0.5" max="1.5" step="0.01">
-              <input type="number" class="range-value" data-for="maskSize" value="{{maskSize}}" min="0.5" max="1.5" step="0.01">
-            </div>
-            <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskScaleHint"}}</p>
-          </div>
-
-          <div class="tfl-form-group tfl-offset-group">
-            <label>{{localize "TOKEN-FRAMER.Config.MaskOffset"}}</label>
-            <div class="tfl-offset-axes">
-              <div class="tfl-offset-axis">
-                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
-                <input type="range" name="maskOffsetX" value="{{maskOffsetX}}" min="-500" max="500" step="1">
-                <input type="number" class="range-value" data-for="maskOffsetX" value="{{maskOffsetX}}" min="-500" max="500" step="1">
-              </div>
-              <div class="tfl-offset-axis">
-                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
-                <input type="range" name="maskOffsetY" value="{{maskOffsetY}}" min="-500" max="500" step="1">
-                <input type="number" class="range-value" data-for="maskOffsetY" value="{{maskOffsetY}}" min="-500" max="500" step="1">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Overlay/Decoration Settings (moved above Background) -->
+      <!-- Overlay/Decoration Settings -->
       <div class="tfl-collapsible" data-collapsed="true">
         <div class="tfl-collapsible-header">
           <i class="fas fa-chevron-down tfl-collapse-icon"></i>
@@ -294,6 +232,67 @@
             </div>
           </div>
           <p class="hint">{{localize "TOKEN-FRAMER.Config.OverlayTintHint"}}</p>
+        </div>
+      </div>
+
+      <!-- Mask Settings -->
+      <div class="tfl-collapsible" data-collapsed="true">
+        <div class="tfl-collapsible-header">
+          <i class="fas fa-chevron-down tfl-collapse-icon"></i>
+          <label>{{localize "TOKEN-FRAMER.Config.MaskSettings"}}</label>
+        </div>
+        <div class="tfl-collapsible-content">
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.MaskShape"}}</label>
+            <div class="tfl-form-fields">
+              <select name="maskShape">
+                <option value="circle" {{#if (eq maskShape "circle")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeCircle"}}</option>
+                <option value="square" {{#if (eq maskShape "square")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeSquare"}}</option>
+                <option value="hexagon" {{#if (eq maskShape "hexagon")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeHexagon"}}</option>
+                <option value="none" {{#if (eq maskShape "none")}}selected{{/if}}>{{localize "TOKEN-FRAMER.Config.MaskShapeNone"}}</option>
+              </select>
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskShapeHint"}}</p>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.MaskImage"}}</label>
+            <div class="tfl-form-fields">
+              <input type="text" name="maskImage" value="{{maskImage}}" placeholder="{{localize 'TOKEN-FRAMER.Config.MaskImagePlaceholder'}}">
+              <button type="button" class="tfl-icon-button tfl-file-picker" data-target="maskImage" title="{{localize 'TOKEN-FRAMER.Config.BrowseFiles'}}">
+                <i class="fas fa-file-import"></i>
+              </button>
+              <button type="button" class="tfl-icon-button tfl-upload-button" data-target="maskImage" title="{{localize 'TOKEN-FRAMER.Config.UploadFromPC'}}">
+                <i class="fas fa-upload"></i>
+              </button>
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskImageHint"}}</p>
+          </div>
+
+          <div class="tfl-form-group">
+            <label>{{localize "TOKEN-FRAMER.Config.MaskScale"}}</label>
+            <div class="tfl-form-fields">
+              <input type="range" name="maskSize" value="{{maskSize}}" min="0.5" max="1.5" step="0.01">
+              <input type="number" class="range-value" data-for="maskSize" value="{{maskSize}}" min="0.5" max="1.5" step="0.01">
+            </div>
+            <p class="hint">{{localize "TOKEN-FRAMER.Config.MaskScaleHint"}}</p>
+          </div>
+
+          <div class="tfl-form-group tfl-offset-group">
+            <label>{{localize "TOKEN-FRAMER.Config.MaskOffset"}}</label>
+            <div class="tfl-offset-axes">
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelX"}}</span>
+                <input type="range" name="maskOffsetX" value="{{maskOffsetX}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="maskOffsetX" value="{{maskOffsetX}}" min="-500" max="500" step="1">
+              </div>
+              <div class="tfl-offset-axis">
+                <span class="tfl-inline-label">{{localize "TOKEN-FRAMER.Config.LabelY"}}</span>
+                <input type="range" name="maskOffsetY" value="{{maskOffsetY}}" min="-500" max="500" step="1">
+                <input type="number" class="range-value" data-for="maskOffsetY" value="{{maskOffsetY}}" min="-500" max="500" step="1">
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

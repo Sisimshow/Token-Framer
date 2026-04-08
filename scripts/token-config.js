@@ -1631,7 +1631,12 @@ class TokenFramerDialog extends FormApplication {
         canvas.toBlob(resolve, 'image/webp', cacheQuality);
       });
 
-      const baseName = this.baseImagePath.split('/').pop().split('?')[0].replace(/\.[^.]+$/, '');
+      let baseName;
+      if (isDataUrl(this.baseImagePath)) {
+        baseName = this._localFileName ? this._localFileName.replace(/\.[^.]+$/, '') : 'pasted_image';
+      } else {
+        baseName = this.baseImagePath.split('/').pop().split('?')[0].replace(/\.[^.]+$/, '');
+      }
       const filename = `${baseName}_token.webp`;
 
       // Use native save dialog (Electron/Chrome) with blob URL fallback (Firefox)
@@ -1717,19 +1722,21 @@ class TokenFramerDialog extends FormApplication {
 
       // Open FilePicker to let user choose save location
       const quickSaveFolder = game.settings.get(MODULE_ID, 'quickSaveFolder') || 'assets/tokens';
-      new foundry.applications.apps.FilePicker.implementation({
+      const fp = new foundry.applications.apps.FilePicker.implementation({
         type: 'folder',
         activeSource: 'data',
         current: quickSaveFolder,
         callback: async (folderPath) => {
           if (!folderPath) return;
           
+          const source = fp.activeSource || 'data';
+          
           // Create the file and upload
           const file = new File([webpBlob], defaultFilename, { type: 'image/webp' });
           
           try {
             const uploadResult = await foundry.applications.apps.FilePicker.implementation.upload(
-              'data',
+              source,
               folderPath,
               file,
               { notify: false }
@@ -1746,7 +1753,8 @@ class TokenFramerDialog extends FormApplication {
             ui.notifications.error(game.i18n.localize('TOKEN-FRAMER.Notifications.SaveImageFailed'));
           }
         }
-      }).render(true);
+      });
+      fp.render(true);
       
     } catch (err) {
       console.error(`${MODULE_ID} | Failed to save image:`, err);
