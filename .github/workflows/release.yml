@@ -36,6 +36,8 @@ jobs:
           MODULE_ID=$(jq -r '.id' module.json)
           ZIP_NAME="${MODULE_ID}-${VERSION}.zip"
           mkdir -p "$MODULE_ID"
+          # Allowlist: only these paths are bundled into the release zip.
+          # Folders like "AI Notes/", ".github/", and ".claude/" are intentionally excluded.
           cp -r module.json README.md assets/ lang/ scripts/ styles/ templates/ "$MODULE_ID/"
           zip -r "$ZIP_NAME" "$MODULE_ID/"
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_OUTPUT
