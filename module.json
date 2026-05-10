@@ -2,7 +2,7 @@
   "id": "token-framer",
   "title": "Token Framer",
   "description": "Add pog-style frames to tokens by compositing the base image with a frame overlay. The result is cached for performance. Fully compatible with Token Variant Art.",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "compatibility": {
     "minimum": "13",
     "verified": "13"

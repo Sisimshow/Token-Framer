@@ -1728,7 +1728,7 @@ class TokenFramerDialog extends FormApplication {
         current: quickSaveFolder,
         callback: async (folderPath) => {
           if (!folderPath) return;
-          
+          folderPath = decodeURIComponent(folderPath);
           const source = fp.activeSource || 'data';
           
           // Create the file and upload
@@ -1805,7 +1805,7 @@ class TokenFramerDialog extends FormApplication {
       });
 
       // Build save path
-      let saveFolder = game.settings.get(MODULE_ID, 'quickSaveFolder') || 'assets/tokens';
+      let saveFolder = decodeURIComponent(game.settings.get(MODULE_ID, 'quickSaveFolder') || 'assets/tokens');
       const useSubfolder = game.settings.get(MODULE_ID, 'quickSaveSubfolder') ?? true;
 
       if (useSubfolder) {

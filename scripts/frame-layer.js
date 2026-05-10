@@ -80,7 +80,7 @@ export function generateCacheKey(baseImagePath, frameImagePath) {
  */
 function getCacheFolder() {
   const customPath = game.settings.get(MODULE_ID, 'cacheFolder');
-  if (customPath) return customPath;
+  if (customPath) return decodeURIComponent(customPath);
   return `worlds/${game.world.id}/token-framer-cache`;
 }
 

@@ -150,7 +150,7 @@ export class BatchFrameDialog extends HandlebarsApplicationMixin(ApplicationV2) 
     super();
     this.frameData = frameData;
     this.images = []; // {name, src, previewUrl, selected, error}
-    this.outputFolder = game.settings.get(MODULE_ID, 'quickSaveFolder') || 'assets/tokens';
+    this.outputFolder = decodeURIComponent(game.settings.get(MODULE_ID, 'quickSaveFolder') || 'assets/tokens');
     this._isProcessing = false;
   }
 
@@ -195,7 +195,7 @@ export class BatchFrameDialog extends HandlebarsApplicationMixin(ApplicationV2) 
   static #onServerFolder(event, target) {
     new (getFilePicker())({
       type: 'folder',
-      callback: (folderPath) => this._loadServerFolder(folderPath)
+      callback: (folderPath) => this._loadServerFolder(decodeURIComponent(folderPath))
     }).render(true);
   }
 
@@ -231,9 +231,9 @@ export class BatchFrameDialog extends HandlebarsApplicationMixin(ApplicationV2) 
       type: 'folder',
       current: this.outputFolder,
       callback: (folderPath) => {
-        this.outputFolder = folderPath;
+        this.outputFolder = decodeURIComponent(folderPath);
         const input = this.element.querySelector('input[name="outputFolder"]');
-        if (input) input.value = folderPath;
+        if (input) input.value = this.outputFolder;
       }
     }).render(true);
   }
