@@ -98,13 +98,16 @@ Hooks.on('preUpdateToken', (document, changes, options, userId) => {
  * Ensures that changing the image path in the prototype token config works
  * Also handles pending frame data from the Token Framer dialog
  */
-Hooks.on('preUpdateActor', async (actor, changes, options, userId) => {
+Hooks.on('preUpdateActor', (actor, changes, options, userId) => {
   if (!actor.isOwner) return;
 
-  // Check for pending data from Token Framer dialog
+  // Check for pending data from Token Framer dialog.
+  // Only drain it when this update actually targets the prototype token (a Token Config
+  // submission always includes changes.prototypeToken) - otherwise an unrelated actor
+  // update (e.g. an HP change from the sheet) would apply the pending frame data early.
   const pendingData = getPendingPrototypeData(actor.id);
-  
-  if (pendingData) {
+
+  if (pendingData && changes.prototypeToken !== undefined) {
     debugLog('🔄 Prototype Token: Found pending Token Framer data');
     
     if (pendingData.restore) {
@@ -158,24 +161,12 @@ Hooks.on('preUpdateActor', async (actor, changes, options, userId) => {
 
   debugLog('🎨 Prototype Token: Intercepting image update...');
 
-  // Sync the "Original Image" flag with the new Texture
+  // Sync the "Original Image" flag with the new Texture.
+  // NOTE: Foundry does not await preUpdate hook handlers, so we cannot generate the
+  // frame here (an await here would mutate `changes` after Foundry has already read it).
+  // Setting this flag synchronously is what triggers the `updateActor` reactor below,
+  // which performs the actual frame generation once the update has landed.
   foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.originalImage`, newTexture);
-
-  try {
-    // Generate the frame
-    const result = await getFramedPathForImage(newTexture, frameData);
-
-    if (result) {
-      // Update the changes object to use the framed image
-      foundry.utils.setProperty(changes, 'prototypeToken.texture.src', result.path);
-      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.currentCacheKey`, result.key);
-      foundry.utils.setProperty(changes, `prototypeToken.flags.${MODULE_ID}.cachedFramePath`, result.path);
-      
-      debugLog('✅ Prototype Token: Applied frame', result.path);
-    }
-  } catch (err) {
-    console.error(`${MODULE_ID} | Failed to intercept prototype token update:`, err);
-  }
 });
 
 /**
@@ -289,7 +280,7 @@ Hooks.on('preCreateToken', (document, data, options, userId) => {
     if (cachedFramePath) {
       updateData['texture.src'] = cachedFramePath;
       updateData[`flags.${MODULE_ID}.originalImage`] = originalImage || document.texture.src;
-      updateData[`flags.${MODULE_ID}.currentCacheKey`] = cachedFramePath.split('/').pop().replace('.webp', '');
+      updateData[`flags.${MODULE_ID}.currentCacheKey`] = cachedFramePath.split('/').pop().replace('.webp', '').split('?')[0];
     }
     document.updateSource(updateData);
   }
@@ -298,6 +289,7 @@ Hooks.on('preCreateToken', (document, data, options, userId) => {
 Hooks.on('canvasReady', async () => {
   if (!canvas.tokens?.placeables) return;
   for (const token of canvas.tokens.placeables) {
+    if (!token.document.isOwner) continue;
     const frameData = getFrameData(token);
     if (frameData.enabled && frameData.frameImage) {
       const currentCacheKey = token.document.getFlag(MODULE_ID, 'currentCacheKey');

@@ -201,25 +201,41 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
   const [baseImg, frameImg, maskImg, bgImg, overlayImg] = await Promise.all([
     loadImage(baseImagePath),
     loadImage(frameImage),
-    maskImage ? loadImage(maskImage) : null,
+    maskImage ? loadImage(maskImage).catch(() => null) : null,
     bgImage ? loadImage(bgImage).catch(() => null) : null,
     overlayImage ? loadImage(overlayImage).catch(() => null) : null
   ]);
 
+  // Offsets are authored against a 512px canvas in the dialog preview; scale them here
+  // so cached output matches what the preview showed regardless of cacheResolution.
+  const offsetScale = size / 512;
+  const scaledBaseOffsetX = baseOffsetX * offsetScale;
+  const scaledBaseOffsetY = baseOffsetY * offsetScale;
+  const scaledMaskOffsetX = maskOffsetX * offsetScale;
+  const scaledMaskOffsetY = maskOffsetY * offsetScale;
+  const scaledFrameOffsetX = frameOffsetX * offsetScale;
+  const scaledFrameOffsetY = frameOffsetY * offsetScale;
+  const scaledBgImageOffsetX = bgImageOffsetX * offsetScale;
+  const scaledBgImageOffsetY = bgImageOffsetY * offsetScale;
+  const scaledOverlayOffsetX = overlayOffsetX * offsetScale;
+  const scaledOverlayOffsetY = overlayOffsetY * offsetScale;
+  const scaledPopOutOffsetX = popOutOffsetX * offsetScale;
+  const scaledPopOutOffsetY = popOutOffsetY * offsetScale;
+
   const baseAspect = baseImg.width / baseImg.height;
   let baseDrawWidth, baseDrawHeight, baseDrawY;
-  
+
   if (baseAspect >= 1) {
     baseDrawHeight = size * baseScale;
     baseDrawWidth = baseDrawHeight * baseAspect;
-    baseDrawY = centerY - baseDrawHeight / 2 + baseOffsetY;
+    baseDrawY = centerY - baseDrawHeight / 2 + scaledBaseOffsetY;
   } else {
     baseDrawWidth = size * baseScale;
     baseDrawHeight = baseDrawWidth / baseAspect;
-    baseDrawY = centerY - (size * baseScale / 2) + baseOffsetY;
+    baseDrawY = centerY - (size * baseScale / 2) + scaledBaseOffsetY;
   }
-  
-  const baseDrawX = centerX - baseDrawWidth / 2 + baseOffsetX;
+
+  const baseDrawX = centerX - baseDrawWidth / 2 + scaledBaseOffsetX;
 
   // Helper function to draw background (color and/or image)
   const drawBackground = (targetCtx) => {
@@ -227,13 +243,13 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
       targetCtx.fillStyle = bgColor;
       targetCtx.fillRect(0, 0, size, size);
     }
-    
+
     if (bgImg) {
       const bgDrawSize = size * bgImageScale;
       targetCtx.drawImage(
         bgImg,
-        centerX - bgDrawSize / 2 + bgImageOffsetX,
-        centerY - bgDrawSize / 2 + bgImageOffsetY,
+        centerX - bgDrawSize / 2 + scaledBgImageOffsetX,
+        centerY - bgDrawSize / 2 + scaledBgImageOffsetY,
         bgDrawSize,
         bgDrawSize
       );
@@ -260,7 +276,7 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
       const maskCtx = maskCanvas.getContext('2d');
       const maskDrawSize = size * maskScale;
       
-      maskCtx.drawImage(maskImg, centerX - maskDrawSize / 2 + maskOffsetX, centerY - maskDrawSize / 2 + maskOffsetY, maskDrawSize, maskDrawSize);
+      maskCtx.drawImage(maskImg, centerX - maskDrawSize / 2 + scaledMaskOffsetX, centerY - maskDrawSize / 2 + scaledMaskOffsetY, maskDrawSize, maskDrawSize);
       
       const maskData = maskCtx.getImageData(0, 0, size, size);
       const pixels = maskData.data;
@@ -276,7 +292,7 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
     } else {
       // Use mask shape (circle, square, hexagon)
       const radius = (size / 2) * maskRadius;
-      applyMaskShape(ctx, maskShape, centerX, centerY, radius, maskOffsetX, maskOffsetY);
+      applyMaskShape(ctx, maskShape, centerX, centerY, radius, scaledMaskOffsetX, scaledMaskOffsetY);
       
       drawBackground(ctx);
       ctx.drawImage(baseImg, baseDrawX, baseDrawY, baseDrawWidth, baseDrawHeight);
@@ -312,7 +328,7 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
     ctx.save();
     ctx.globalAlpha = frameOpacity;
     const frameSize = size * frameScale;
-    drawWithTint(ctx, frameImg, centerX - frameSize / 2 + frameOffsetX, centerY - frameSize / 2 + frameOffsetY, frameSize, frameSize, frameTintColor);
+    drawWithTint(ctx, frameImg, centerX - frameSize / 2 + scaledFrameOffsetX, centerY - frameSize / 2 + scaledFrameOffsetY, frameSize, frameSize, frameTintColor);
     ctx.globalAlpha = 1.0;
     ctx.restore();
   };
@@ -323,7 +339,7 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
       ctx.save();
       ctx.globalAlpha = overlayOpacity;
       const overlaySize = size * overlayScale;
-      drawWithTint(ctx, overlayImg, centerX - overlaySize / 2 + overlayOffsetX, centerY - overlaySize / 2 + overlayOffsetY, overlaySize, overlaySize, overlayTintColor);
+      drawWithTint(ctx, overlayImg, centerX - overlaySize / 2 + scaledOverlayOffsetX, centerY - overlaySize / 2 + scaledOverlayOffsetY, overlaySize, overlaySize, overlayTintColor);
       ctx.globalAlpha = 1.0;
       ctx.restore();
     }
@@ -335,8 +351,8 @@ export async function compositeImage(baseImagePath, frameData, size = 1000, qual
     ctx.save();
     const halfAngle = (popOutDegrees / 2) * Math.PI / 180;
     const centerAngle = (popOutRotation - 90) * Math.PI / 180;
-    const popCenterX = centerX + popOutOffsetX;
-    const popCenterY = centerY + popOutOffsetY;
+    const popCenterX = centerX + scaledPopOutOffsetX;
+    const popCenterY = centerY + scaledPopOutOffsetY;
     ctx.beginPath();
     ctx.moveTo(popCenterX, popCenterY);
     ctx.arc(popCenterX, popCenterY, size, centerAngle - halfAngle, centerAngle + halfAngle);
@@ -381,7 +397,7 @@ export function beginNotificationSuppression() {
  * Restore info notifications after cache file upload
  */
 export function endNotificationSuppression() {
-  notificationSuppressionCount--;
+  notificationSuppressionCount = Math.max(0, notificationSuppressionCount - 1);
   if (notificationSuppressionCount === 0 && originalNotificationInfo) {
     ui.notifications.info = originalNotificationInfo;
     originalNotificationInfo = null;
@@ -547,6 +563,20 @@ export async function generateFrameForPrototype(baseImagePath, frameData) {
 }
 
 /**
+ * Check whether a path is already a framed/cached image - either it lives inside the
+ * (possibly custom) cache folder, or its filename ends in "token" (the Quick Save /
+ * Batch Frame naming convention). Used to detect a lost "originalImage" flag before
+ * re-feeding an already-framed file back into compositing.
+ */
+function isAlreadyFramedPath(imagePath) {
+  if (!imagePath) return false;
+  if (imagePath.includes(getCacheFolder()) || imagePath.includes('token-framer-cache')) return true;
+  const filename = imagePath.split('/').pop().split('?')[0];
+  const nameWithoutExt = filename.replace(/\.[^.]+$/, '');
+  return /token$/i.test(nameWithoutExt);
+}
+
+/**
  * Regenerate all frames in the world
  * Useful for when the cache is deleted manually
  */
@@ -580,22 +610,22 @@ export async function regenerateAllFrames() {
     if (!originalImage) continue;
 
     // Skip if the original image was lost (current texture is a cached file)
-    if (originalImage.includes("token-framer-cache")) {
+    if (isAlreadyFramedPath(originalImage)) {
       console.warn(`${MODULE_ID} | Skipped ${actor.name} - Lost original image source.`);
       continue;
     }
 
     console.log(`${MODULE_ID} | Regenerating Prototype Token: ${actor.prototypeToken.name} (Actor: ${actor.name})`);
-    
+
     const cachedPath = await generateFrameForPrototype(originalImage, frameData);
-    
+
     if (cachedPath) {
       await actor.update({
         'prototypeToken.texture.src': cachedPath,
         [`prototypeToken.flags.${MODULE_ID}.cachedFramePath`]: cachedPath
       });
+      count++;
     }
-    count++;
   }
 
   // 3. Process Placed Tokens (in Scenes)
@@ -607,7 +637,7 @@ export async function regenerateAllFrames() {
     
     if (!baseImagePath) baseImagePath = tokenDoc.texture.src;
 
-    if (baseImagePath.includes("token-framer-cache")) {
+    if (isAlreadyFramedPath(baseImagePath)) {
         console.warn(`${MODULE_ID} | Skipped ${tokenDoc.name} - Lost original image source.`);
         continue;
     }
@@ -620,8 +650,8 @@ export async function regenerateAllFrames() {
             'texture.src': result.path,
             [`flags.${MODULE_ID}.currentCacheKey`]: result.key
         });
+        count++;
     }
-    count++;
   }
 
   ui.notifications.info(game.i18n.format('TOKEN-FRAMER.Notifications.RegenerateComplete', { count }));

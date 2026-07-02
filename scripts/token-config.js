@@ -11,7 +11,6 @@ import { applyFrameToToken, restoreOriginalImage, generateFrameForPrototype, gen
 import { BatchFrameDialog } from './batch-frame.js';
 
 // Debounce timer for preview updates
-let previewDebounceTimer = null;
 const PREVIEW_DEBOUNCE_MS = 150;
 
 // Pending frame data for prototype tokens (keyed by actor ID)
@@ -484,6 +483,7 @@ class TokenFramerDialog extends FormApplication {
     this._zoomLevel = 1;
     this._panX = 0;
     this._panY = 0;
+    this._previewDebounceTimer = null;
   }
 
   static get defaultOptions() {
@@ -1525,10 +1525,11 @@ class TokenFramerDialog extends FormApplication {
    * Debounced preview update
    */
   _debouncedPreviewUpdate(rootEl) {
-    if (previewDebounceTimer) {
-      clearTimeout(previewDebounceTimer);
+    if (this._previewDebounceTimer) {
+      clearTimeout(this._previewDebounceTimer);
     }
-    previewDebounceTimer = setTimeout(() => {
+    this._previewDebounceTimer = setTimeout(() => {
+      this._previewDebounceTimer = null;
       this._updatePreview(rootEl);
     }, PREVIEW_DEBOUNCE_MS);
   }
@@ -1583,6 +1584,10 @@ class TokenFramerDialog extends FormApplication {
   async close(options) {
     if (this._panMoveHandler) window.removeEventListener('mousemove', this._panMoveHandler);
     if (this._panUpHandler) window.removeEventListener('mouseup', this._panUpHandler);
+    if (this._previewDebounceTimer) {
+      clearTimeout(this._previewDebounceTimer);
+      this._previewDebounceTimer = null;
+    }
     return super.close(options);
   }
 
@@ -1933,9 +1938,13 @@ class TokenFramerDialog extends FormApplication {
     const placedToken = canvas.tokens?.get(this.token.id);
     
     if (placedToken) {
-      // Placed token - update directly (no form state issues)
-      await placedToken.document.setFlag(MODULE_ID, 'originalImage', this.baseImagePath);
-      await placedToken.document.setFlag(MODULE_ID, 'frameData', formData);
+      // Placed token - update directly (no form state issues).
+      // Both flags are written in a single update with tokenFramerIntercepted so the
+      // updateToken reactor skips it - applyFrameToToken() below is the one generation pass.
+      await placedToken.document.update({
+        [`flags.${MODULE_ID}.originalImage`]: this.baseImagePath,
+        [`flags.${MODULE_ID}.frameData`]: formData
+      }, { tokenFramerIntercepted: true });
       await applyFrameToToken(placedToken, true);
       debugLog('Frame applied to placed token:', placedToken.name);
       ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Notifications.FrameApplied'));

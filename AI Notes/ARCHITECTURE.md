@@ -120,6 +120,7 @@ For the normal (non-per-art) flow, swapping art via TVA fires `preUpdateToken`, 
 - All path components are URL-decoded (`normalizePath` via `decodeURIComponent`) before hashing.
 - `combinedHash` is a 6-char hex slice of djb2 over `base + '|' + frame`. Deterministic — same inputs always produce the same key. Don't replace this with `crypto.subtle` hashes (async, slower, breaks cache stability for existing users).
 - The trailing `_token` is what makes the file self-identify as "already framed" via `isAlreadyFramedFile`. Don't drop it.
+- **The key intentionally excludes frame settings** (scale, offsets, mask shape, tint, etc.) — only the base and frame image *paths* are hashed. Two tokens sharing the same base+frame images but different settings will share one cache file (last write wins). This is a deliberate author decision, not an oversight — **do not "fix" this by folding settings into the key** unless explicitly asked.
 
 ## The two compositing pipelines
 
@@ -132,7 +133,7 @@ There are two slightly different render paths and they MUST stay in sync feature
 
 Differences:
 
-- Preview scales offsets by `offsetScale = size / 512` so the same offset values look right at a smaller preview size. Cache version uses raw offsets at the cache resolution.
+- Both pipelines scale every layer offset by `offsetScale = size / 512` (offsets are authored against a conceptual 512px canvas). This keeps cached output visually matching the dialog preview regardless of `cacheResolution`. Both `compositeImage()` and `generatePreview()` must apply this scaling identically — this was a real bug (cache output didn't match preview) fixed in a later release; don't reintroduce the divergence by adding a new offset field to only one pipeline.
 - Preview renders the optional pop-out highlight (`popOutPreview` flag); cache never does.
 - Otherwise the layer order, mask logic, tint logic, and pop-out math are identical.
 

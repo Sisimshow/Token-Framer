@@ -28,7 +28,12 @@ function isAlreadyFramed(filePath) {
  * Extract just the filename from a path
  */
 function getFilename(filePath) {
-  return filePath.split('/').pop().split('?')[0];
+  const raw = filePath.split('/').pop().split('?')[0];
+  try {
+    return decodeURIComponent(raw);
+  } catch (e) {
+    return raw;
+  }
 }
 
 /**
@@ -83,10 +88,10 @@ function buildZip(files) {
     const lv = new DataView(local);
     lv.setUint32(0, 0x04034B50, true);   // signature
     lv.setUint16(4, 20, true);            // version needed
-    lv.setUint16(6, 0, true);             // flags
+    lv.setUint16(6, 0x0800, true);        // flags: UTF-8 filename
     lv.setUint16(8, 0, true);             // compression: STORE
     lv.setUint16(10, 0, true);            // mod time
-    lv.setUint16(12, 0, true);            // mod date
+    lv.setUint16(12, 0x21, true);         // mod date: 1980-01-01 (valid DOS date)
     lv.setUint32(14, crc, true);          // crc-32
     lv.setUint32(18, data.length, true);  // compressed size
     lv.setUint32(22, data.length, true);  // uncompressed size
@@ -102,10 +107,10 @@ function buildZip(files) {
     cv.setUint32(0, 0x02014B50, true);    // signature
     cv.setUint16(4, 20, true);            // version made by
     cv.setUint16(6, 20, true);            // version needed
-    cv.setUint16(8, 0, true);             // flags
+    cv.setUint16(8, 0x0800, true);        // flags: UTF-8 filename
     cv.setUint16(10, 0, true);            // compression: STORE
     cv.setUint16(12, 0, true);            // mod time
-    cv.setUint16(14, 0, true);            // mod date
+    cv.setUint16(14, 0x21, true);         // mod date: 1980-01-01 (valid DOS date)
     cv.setUint32(16, crc, true);          // crc-32
     cv.setUint32(20, data.length, true);  // compressed size
     cv.setUint32(24, data.length, true);  // uncompressed size
@@ -195,6 +200,7 @@ export class BatchFrameDialog extends HandlebarsApplicationMixin(ApplicationV2) 
   static #onServerFolder(event, target) {
     new (getFilePicker())({
       type: 'folder',
+      current: this.outputFolder,
       callback: (folderPath) => this._loadServerFolder(decodeURIComponent(folderPath))
     }).render(true);
   }
@@ -262,7 +268,7 @@ export class BatchFrameDialog extends HandlebarsApplicationMixin(ApplicationV2) 
       }
 
       if (skipped.length > 0) {
-        ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Batch.SkippedCount').replace('{count}', skipped.length));
+        ui.notifications.info(game.i18n.format('TOKEN-FRAMER.Batch.SkippedCount', { count: skipped.length }));
       }
 
       this.images = files.map(f => ({
@@ -291,7 +297,7 @@ export class BatchFrameDialog extends HandlebarsApplicationMixin(ApplicationV2) 
     }
 
     if (skipped.length > 0) {
-      ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Batch.SkippedCount').replace('{count}', skipped.length));
+      ui.notifications.info(game.i18n.format('TOKEN-FRAMER.Batch.SkippedCount', { count: skipped.length }));
     }
 
     const images = [];
@@ -474,8 +480,7 @@ export class BatchFrameDialog extends HandlebarsApplicationMixin(ApplicationV2) 
 
     for (let i = 0; i < this.images.length; i++) {
       const img = this.images[i];
-      textEl.textContent = game.i18n.localize('TOKEN-FRAMER.Batch.Processing')
-        .replace('{current}', i + 1).replace('{total}', this.images.length);
+      textEl.textContent = game.i18n.format('TOKEN-FRAMER.Batch.Processing', { current: i + 1, total: this.images.length });
       fillEl.style.width = `${((i + 1) / this.images.length) * 100}%`;
 
       try {
@@ -541,8 +546,7 @@ export class BatchFrameDialog extends HandlebarsApplicationMixin(ApplicationV2) 
 
     for (let i = 0; i < selected.length; i++) {
       const img = selected[i];
-      textEl.textContent = game.i18n.localize('TOKEN-FRAMER.Batch.Saving')
-        .replace('{current}', i + 1).replace('{total}', selected.length);
+      textEl.textContent = game.i18n.format('TOKEN-FRAMER.Batch.Saving', { current: i + 1, total: selected.length });
       fillEl.style.width = `${((i + 1) / selected.length) * 100}%`;
 
       try {
@@ -562,9 +566,7 @@ export class BatchFrameDialog extends HandlebarsApplicationMixin(ApplicationV2) 
     this._isProcessing = false;
 
     ui.notifications.info(
-      game.i18n.localize('TOKEN-FRAMER.Batch.Complete')
-        .replace('{count}', savedCount)
-        .replace('{folder}', this.outputFolder)
+      game.i18n.format('TOKEN-FRAMER.Batch.Complete', { count: savedCount, folder: this.outputFolder })
     );
   }
 
@@ -595,8 +597,7 @@ export class BatchFrameDialog extends HandlebarsApplicationMixin(ApplicationV2) 
     const entries = [];
     for (let i = 0; i < selected.length; i++) {
       const img = selected[i];
-      textEl.textContent = game.i18n.localize('TOKEN-FRAMER.Batch.Saving')
-        .replace('{current}', i + 1).replace('{total}', selected.length);
+      textEl.textContent = game.i18n.format('TOKEN-FRAMER.Batch.Saving', { current: i + 1, total: selected.length });
       fillEl.style.width = `${((i + 1) / selected.length) * 100}%`;
 
       try {
@@ -623,7 +624,7 @@ export class BatchFrameDialog extends HandlebarsApplicationMixin(ApplicationV2) 
     this._isProcessing = false;
 
     if (entries.length > 0) {
-      ui.notifications.info(game.i18n.localize('TOKEN-FRAMER.Batch.DownloadComplete').replace('{count}', entries.length));
+      ui.notifications.info(game.i18n.format('TOKEN-FRAMER.Batch.DownloadComplete', { count: entries.length }));
     }
   }
 
